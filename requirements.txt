@@ -5,3 +5,4 @@ torch>=2.0
 peft>=0.6
 fastapi
 pydantic
+huggingface_hub
