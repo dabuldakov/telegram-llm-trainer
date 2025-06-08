@@ -59,8 +59,7 @@ training_args = TrainingArguments(
     save_steps=500,
     optim="adamw_torch",
     gradient_checkpointing=True,
-    remove_unused_columns=False,
-    save_total_limit=2
+    remove_unused_columns=False
 )
 
 trainer = Trainer(
@@ -72,5 +71,5 @@ trainer = Trainer(
 )
 
 # Запуск обучения
-trainer.train()
+trainer.train(resume_from_checkpoint=True)
 trainer.save_model(output_dir)

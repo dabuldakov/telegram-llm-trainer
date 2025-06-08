@@ -14,7 +14,7 @@ class ChatModel:
         self.model = AutoModelForCausalLM.from_pretrained(
             model_path,
             device_map="auto",
-            torch_dtype=torch.float16
+            torch_dtype=torch.bfloat16
         )
 
     def generate(self, request: Request):
