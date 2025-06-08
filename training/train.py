@@ -26,7 +26,7 @@ tokenizer.pad_token = tokenizer.eos_token
 
 # Токенизация данных
 def tokenize_function(examples):
-    return tokenizer(examples["text"], truncation=True, max_length=1024)
+    return tokenizer(examples["text"], truncation=True, max_length=2048)
 
 tokenized_dataset = dataset.map(
     tokenize_function,
@@ -56,7 +56,8 @@ training_args = TrainingArguments(
     num_train_epochs=3,
     logging_steps=10,
     bf16=True,
-    save_steps=500,
+    save_steps=2000,          # Сохранять каждые 2000 шагов (вместо 500)
+    save_total_limit=2,       # Хранить только 2 последних чекпоинта
     optim="adamw_torch",
     gradient_checkpointing=True,
     remove_unused_columns=False
