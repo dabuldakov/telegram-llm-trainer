@@ -72,5 +72,5 @@ trainer = Trainer(
 )
 
 # Запуск обучения
-trainer.train(resume_from_checkpoint=True)
+trainer.train()
 trainer.save_model(output_dir)
