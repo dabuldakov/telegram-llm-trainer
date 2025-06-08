@@ -6,7 +6,9 @@ brew install python3
 git clone https://github.com/dabuldakov/telegram-llm-trainer.git
 pip install -r requirements.txt
 create file .env with tokens
+https://core.telegram.org/bots
 TELEGRAM_BOT_TOKEN=your token...
+https://huggingface.co/IlyaGusev/saiga_mistral_7b_lora
 HUGGINGFACE_TOKEN=your token...
 
 Application flow:
