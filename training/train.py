@@ -2,21 +2,43 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     TrainingArguments,
-    Trainer
+    Trainer,
+    DataCollatorForLanguageModeling
 )
 from datasets import load_from_disk
-from huggingface_hub import notebook_login
+from huggingface_hub import login
 import torch
+from config import Config
 
 # Конфигурация
 model_name = "mistralai/Mistral-7B-v0.1"
-dataset_path = "data/processed_dataset"
-output_dir = "outputs/fine_tuned_model"
+dataset_path = Config.DATA_SET_PATH
+output_dir = Config.MODEL_PATH
+token = token=Config.HUGGINGFACE_TOKEN
+
+# Authorization
+login(token, add_to_git_credential=False)
 
 # Загрузка данных
 dataset = load_from_disk(dataset_path)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 tokenizer.pad_token = tokenizer.eos_token
+
+# Токенизация данных
+def tokenize_function(examples):
+    return tokenizer(examples["text"], truncation=True, max_length=2048)  # Учитываем контекст Mistral
+
+tokenized_dataset = dataset.map(
+    tokenize_function,
+    batched=True,
+    remove_columns=["text"]  # Удаляем исходный текст
+)
+
+# DataCollator для языкового моделирования
+data_collator = DataCollatorForLanguageModeling(
+    tokenizer=tokenizer,
+    mlm=False  # Для causal LM
+)
 
 # Подготовка модели
 model = AutoModelForCausalLM.from_pretrained(
@@ -28,24 +50,23 @@ model = AutoModelForCausalLM.from_pretrained(
 # Параметры обучения
 training_args = TrainingArguments(
     output_dir=output_dir,
-    per_device_train_batch_size=4,
-    gradient_accumulation_steps=2,
-    learning_rate=2e-5,
+    per_device_train_batch_size=2,
+    gradient_accumulation_steps=4,
+    learning_rate=1e-5,
     num_train_epochs=3,
     logging_steps=10,
     fp16=True,
-    save_steps=500
+    save_steps=500,
+    remove_unused_columns=False  # Важно!
 )
 
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=dataset,
-    tokenizer=tokenizer
+    train_dataset=tokenized_dataset,
+    tokenizer=tokenizer,
+    data_collator=data_collator  # Критически важно для CausalLM!
 )
-
-# Authorization
-notebook_login()
 
 # Запуск обучения
 trainer.train()

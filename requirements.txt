@@ -1,8 +1,10 @@
-transformers>=4.34
-datasets>=2.14
-accelerate>=0.24
-torch>=2.0
-peft>=0.6
+transformers
+datasets
+accelerate
+torch
+peft
 fastapi
 pydantic
 huggingface_hub
+telebot
+python-dotenv
