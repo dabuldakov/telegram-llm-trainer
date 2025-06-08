@@ -5,6 +5,7 @@ from transformers import (
     Trainer
 )
 from datasets import load_from_disk
+from huggingface_hub import notebook_login
 import torch
 
 # Конфигурация
@@ -42,6 +43,9 @@ trainer = Trainer(
     train_dataset=dataset,
     tokenizer=tokenizer
 )
+
+# Authorization
+notebook_login()
 
 # Запуск обучения
 trainer.train()
