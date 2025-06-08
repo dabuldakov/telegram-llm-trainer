@@ -26,7 +26,7 @@ tokenizer.pad_token = tokenizer.eos_token
 
 # Токенизация данных
 def tokenize_function(examples):
-    return tokenizer(examples["text"], truncation=True, max_length=2048)  # Учитываем контекст Mistral
+    return tokenizer(examples["text"], truncation=True, max_length=1024)
 
 tokenized_dataset = dataset.map(
     tokenize_function,
@@ -57,6 +57,8 @@ training_args = TrainingArguments(
     logging_steps=10,
     bf16=True,
     save_steps=500,
+    optim="adamw_torch",
+    gradient_checkpointing=True,
     remove_unused_columns=False
 )
 
