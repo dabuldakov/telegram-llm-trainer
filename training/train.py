@@ -43,7 +43,7 @@ data_collator = DataCollatorForLanguageModeling(
 # Подготовка модели
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
-    torch_dtype=torch.float16,
+    torch_dtype=torch.bfloat16,
     device_map="auto"
 )
 
@@ -55,9 +55,9 @@ training_args = TrainingArguments(
     learning_rate=1e-5,
     num_train_epochs=3,
     logging_steps=10,
-    fp16=True,
+    bf16=True,
     save_steps=500,
-    remove_unused_columns=False  # Важно!
+    remove_unused_columns=False
 )
 
 trainer = Trainer(
