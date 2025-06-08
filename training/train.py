@@ -59,7 +59,8 @@ training_args = TrainingArguments(
     save_steps=500,
     optim="adamw_torch",
     gradient_checkpointing=True,
-    remove_unused_columns=False
+    remove_unused_columns=False,
+    save_total_limit=2
 )
 
 trainer = Trainer(
