@@ -59,7 +59,7 @@ def handle_message(message):
         request = Request(user=imitator_name, prompt=prompt)
         
         # Генерируем ответ
-        bot_response = chat_model.generate(request)
+        bot_response = chat_model.generate(request, chat_id)
 
         # Добавляем ответ в историю и отправляем
         history.add_message(chat_id, bot_name, bot_response)
