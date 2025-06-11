@@ -1,7 +1,7 @@
 from huggingface_hub import login
 import torch
 from peft import PeftModel, PeftConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, BitsAndBytesConfig
 
 from config import Config
 
@@ -40,7 +40,7 @@ class ChatModelSaigaMistral:
             "content": message
         })
 
-    def get_prompt(self, tokenizer):
+    def get_prompt(self):
         final_text = ""
         for message in self.messages:
             message_text = self.message_template.format(**message)
@@ -60,10 +60,16 @@ def generate(model, tokenizer, prompt, generation_config):
     output = tokenizer.decode(output_ids, skip_special_tokens=True)
     return output.strip()
 
+# Setup quantization config
+quantization_config = BitsAndBytesConfig(
+    load_in_8bit=True,
+    llm_int8_threshold=6.0
+)
+
 config = PeftConfig.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(
     config.base_model_name_or_path,
-    load_in_8bit=True,
+    quantization_config=quantization_config,
     torch_dtype=torch.float16,
     device_map="auto"
 )
@@ -76,7 +82,7 @@ model.eval()
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
 generation_config = GenerationConfig.from_pretrained(MODEL_NAME)
-print(generation_config)
+print("Generation config:", generation_config)
 
 inputs = ["Почему трава зеленая?", "Сочини длинный рассказ, обязательно упоминая следующие объекты. Дано: Таня, мяч"]
 for inp in inputs:

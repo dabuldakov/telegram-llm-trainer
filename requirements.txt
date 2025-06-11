@@ -8,3 +8,5 @@ pydantic
 huggingface_hub
 telebot
 python-dotenv
+bitsandbytes
+transformers[sentencepiece]
