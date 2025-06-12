@@ -1,12 +1,14 @@
 import telebot
+from bot.chat_model_saiga_mistral import ChatModelSaigaMistral, generate_saiga
 from bot.request import Request
-from bot.chat_model import ChatModel
+#from bot.chat_model import ChatModel
 from config import Config
 from bot.chat_history import ChatHistory
 
 # Инициализация
 bot = telebot.TeleBot(Config.TELEGRAM_BOT_TOKEN)
-chat_model = ChatModel()
+#chat_model = ChatModel()
+chat_model_mistral = ChatModelSaigaMistral()
 history = ChatHistory()
 bot_name = "HuinyaBot"
 imitator_name = "Timur Mukhtarov"
@@ -37,7 +39,28 @@ def emperor_command(message):
     except Exception as e:
         bot.send_message(message, f"Ошибка при получении фразы: {str(e)}")
 
+
 @bot.message_handler(func=lambda message: True)
+def handle_message(message):
+    try:
+        user_message = message.text
+        
+        chat_model_mistral.add_user_message(user_message)
+        # Проверяем наличие упоминания бота
+        if "@ochen_hueviy_bot" not in user_message:
+            return 
+        
+        # Генерируем ответ
+        prompt = chat_model_mistral.get_prompt()
+        output = generate_saiga(prompt)
+        chat_model_mistral.add_bot_message(output)
+        # Отправляем
+        bot.reply_to(message, output)
+        
+    except Exception as e:
+        bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")      
+
+#@bot.message_handler(func=lambda message: True)
 def handle_message(message):
     try:
         chat_id = message.chat.id
@@ -59,11 +82,11 @@ def handle_message(message):
         request = Request(user=imitator_name, prompt=prompt)
         
         # Генерируем ответ
-        bot_response = chat_model.generate(request, chat_id)
+        #bot_response = chat_model.generate(request, chat_id)
 
         # Добавляем ответ в историю и отправляем
-        history.add_message(chat_id, bot_name, bot_response)
-        bot.reply_to(message, bot_response)
+        #history.add_message(chat_id, bot_name, bot_response)
+        #bot.reply_to(message, bot_response)
         
     except Exception as e:
         bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")

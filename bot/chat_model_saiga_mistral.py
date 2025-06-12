@@ -2,17 +2,40 @@ from huggingface_hub import login
 import torch
 from peft import PeftModel, PeftConfig
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, BitsAndBytesConfig
-
 from config import Config
 
 MODEL_NAME = "IlyaGusev/saiga_mistral_7b"
 DEFAULT_MESSAGE_TEMPLATE = "<s>{role}\n{content}</s>"
 DEFAULT_RESPONSE_TEMPLATE = "<s>bot\n"
 DEFAULT_SYSTEM_PROMPT = "Ты — Сайга, русскоязычный автоматический ассистент. Ты разговариваешь с людьми и помогаешь им."
-token = token=Config.HUGGINGFACE_TOKEN
+token = Config.HUGGINGFACE_TOKEN
+
+# Initialize model components globally
+quantization_config = BitsAndBytesConfig(
+    load_in_8bit=True,
+    llm_int8_threshold=6.0
+)
 
 # Authorization
-login(token, add_to_git_credential=False)
+login(token=token, add_to_git_credential=False)
+
+# Load model and tokenizer once at startup
+config = PeftConfig.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(
+    config.base_model_name_or_path,
+    quantization_config=quantization_config,
+    torch_dtype=torch.float16,
+    device_map="auto"
+)
+model = PeftModel.from_pretrained(
+    model,
+    MODEL_NAME,
+    torch_dtype=torch.float16
+)
+model.eval()
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
+generation_config = GenerationConfig.from_pretrained(MODEL_NAME)
 
 class ChatModelSaigaMistral:
     def __init__(
@@ -23,9 +46,13 @@ class ChatModelSaigaMistral:
     ):
         self.message_template = message_template
         self.response_template = response_template
+        self.system_prompt = system_prompt
+        self.reset_conversation()
+
+    def reset_conversation(self):
         self.messages = [{
             "role": "system",
-            "content": system_prompt
+            "content": self.system_prompt
         }]
 
     def add_user_message(self, message):
@@ -48,8 +75,8 @@ class ChatModelSaigaMistral:
         final_text += DEFAULT_RESPONSE_TEMPLATE
         return final_text.strip()
 
-
-def generate(model, tokenizer, prompt, generation_config):
+def generate_saiga(prompt):
+    """Simplified generation function that only requires the prompt text"""
     data = tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
     data = {k: v.to(model.device) for k, v in data.items()}
     output_ids = model.generate(
@@ -60,39 +87,21 @@ def generate(model, tokenizer, prompt, generation_config):
     output = tokenizer.decode(output_ids, skip_special_tokens=True)
     return output.strip()
 
-# Setup quantization config
-quantization_config = BitsAndBytesConfig(
-    load_in_8bit=True,
-    llm_int8_threshold=6.0
-)
+# Example usage
+if __name__ == "__main__":
+    print("Generation config:", generation_config)
+    
+    inputs = [
+        "Почему трава зеленая?", 
+        "Сочини длинный рассказ, обязательно упоминая следующие объекты. Дано: Таня, мяч"
+    ]
+    
+    for inp in inputs:
+        conversation = ChatModelSaigaMistral()
+        conversation.add_user_message(inp)
+        prompt = conversation.get_prompt()
 
-config = PeftConfig.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(
-    config.base_model_name_or_path,
-    quantization_config=quantization_config,
-    torch_dtype=torch.float16,
-    device_map="auto"
-)
-model = PeftModel.from_pretrained(
-    model,
-    MODEL_NAME,
-    torch_dtype=torch.float16
-)
-model.eval()
-
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
-generation_config = GenerationConfig.from_pretrained(MODEL_NAME)
-print("Generation config:", generation_config)
-
-inputs = ["Почему трава зеленая?", "Сочини длинный рассказ, обязательно упоминая следующие объекты. Дано: Таня, мяч"]
-for inp in inputs:
-    conversation = ChatModelSaigaMistral()
-    conversation.add_user_message(inp)
-    prompt = conversation.get_prompt(tokenizer)
-
-    output = generate(model, tokenizer, prompt, generation_config)
-    print(inp)
-    print(output)
-    print()
-    print("==============================")
-    print()
+        output = generate_saiga(prompt)  # Simplified call
+        print("Input:", inp)
+        print("Output:", output)
+        print("\n" + "="*50 + "\n")
