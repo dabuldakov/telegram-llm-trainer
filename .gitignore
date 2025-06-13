@@ -196,3 +196,4 @@ cython_debug/
 .history
 data/
 .DS_Store
+prompts.log

@@ -47,6 +47,7 @@ class ChatModelSaigaMistral:
         self.message_template = message_template
         self.response_template = response_template
         self.system_prompt = system_prompt
+        self.max_history = getattr(Config, "MAX_CHAT_HISTORY", 10)
         self.reset_conversation()
 
     def reset_conversation(self):
@@ -60,12 +61,19 @@ class ChatModelSaigaMistral:
             "role": "user",
             "content": message
         })
+        self._trim_history()
 
     def add_bot_message(self, message):
         self.messages.append({
             "role": "bot",
             "content": message
         })
+        self._trim_history()
+
+    def _trim_history(self):
+        if len(self.messages) > self.max_history + 1:
+            self.messages = [self.messages[0]] + self.messages[-self.max_history:]
+    
 
     def get_prompt(self):
         final_text = ""
@@ -86,22 +94,3 @@ def generate_saiga(prompt):
     output_ids = output_ids[len(data["input_ids"][0]):]
     output = tokenizer.decode(output_ids, skip_special_tokens=True)
     return output.strip()
-
-# Example usage
-if __name__ == "__main__":
-    print("Generation config:", generation_config)
-    
-    inputs = [
-        "Почему трава зеленая?", 
-        "Сочини длинный рассказ, обязательно упоминая следующие объекты. Дано: Таня, мяч"
-    ]
-    
-    for inp in inputs:
-        conversation = ChatModelSaigaMistral()
-        conversation.add_user_message(inp)
-        prompt = conversation.get_prompt()
-
-        output = generate_saiga(prompt)  # Simplified call
-        print("Input:", inp)
-        print("Output:", output)
-        print("\n" + "="*50 + "\n")

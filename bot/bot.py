@@ -1,4 +1,6 @@
 import telebot
+import datetime
+import random
 from bot.chat_model_saiga_mistral import ChatModelSaigaMistral, generate_saiga
 from bot.request import Request
 #from bot.chat_model import ChatModel
@@ -52,6 +54,10 @@ def handle_message(message):
         
         # Генерируем ответ
         prompt = chat_model_mistral.get_prompt()
+
+        with open("prompts.log", "a", encoding="utf-8") as f:
+            f.write(f"{datetime.datetime.now().isoformat()} | {prompt}\n{'-'*40}\n")
+        
         output = generate_saiga(prompt)
         chat_model_mistral.add_bot_message(output)
         # Отправляем
@@ -90,8 +96,6 @@ def handle_message(message):
         
     except Exception as e:
         bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")
-
-import random
 
 if __name__ == "__main__":
     print("Бот запущен...")
