@@ -15,6 +15,7 @@ history = ChatHistory()
 bot_name = "bot"
 imitator_name = "Timur Mukhtarov"
 DEFAULT_SYSTEM_PROMPT = "Ты русскоязычный автоматический ассистент. Ты разговариваешь с людьми и помогаешь им. \n"
+DEFAULT_CHAT_PROMT = "Ты имитируешь чат. Отвечай как: "
 
 # Загружаем фразы один раз при старте
 with open("bot/warhammer_frazes.txt", encoding="utf-8") as f:
@@ -55,8 +56,8 @@ def handle_message(message):
         if "@ochen_hueviy_bot" not in user_message:
             return 
         
-        history_messages = history.get_formatted_history(chat_id)
-        prompt = DEFAULT_SYSTEM_PROMPT + history_messages
+        discusion = history.get_formatted_history(chat_id)
+        prompt = DEFAULT_SYSTEM_PROMPT + discusion
 
         loggin_promt(prompt)
         
@@ -79,22 +80,19 @@ def handle_message(message):
     try:
         chat_id = message.chat.id
         user_message = message.text
-        
-        # Добавляем сообщение в историю
-        fio = f"{message.from_user.first_name} {message.from_user.last_name}"
-        
 
-        # Проверяем наличие упоминания бота
+        if not message.from_user.is_bot:
+            history.add_message(chat_id, get_fio(message), user_message)
+        
         if "@ochen_hueviy_bot" not in user_message:
-            history.add_message(chat_id, fio, user_message)
             return 
         
-        # Формируем промпт
         discusion = history.get_formatted_history(chat_id)
-        prompt = f"Ты имитируешь чат. Отвечай как: {imitator_name}. {user_message} \n Контекст: {discusion}"
-        print(f"[PROMPT]: {prompt}")
-        request = Request(user=imitator_name, prompt=prompt)
+        prompt = f"{DEFAULT_CHAT_PROMT} {imitator_name}. \n Контекст: {discusion}"
+
+        loggin_promt(prompt)
         
+        request = Request(user=imitator_name, prompt=prompt)
         # Генерируем ответ
         #bot_response = chat_model.generate(request, chat_id)
 
