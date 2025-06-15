@@ -3,12 +3,10 @@
 To start:
 
 brew install python3
-
 git clone https://github.com/dabuldakov/telegram-llm-trainer.git
-
 pip install -r requirements.txt
 
-create file .env with tokens
+create file .env with tokens or add secrets on platform like https://datasphere.yandex.cloud/
 
 https://core.telegram.org/bots
 TELEGRAM_BOT_TOKEN=your token...
@@ -33,9 +31,6 @@ python3 -m training.train
 
 python3 -m bot.bot
 
-
-Additional settings:
-
-training logs
-
-tensorboard --logdir=outputs/runs
+4. Looking for training on site
+wandb login
+enter here login from https://wandb.ai/authorize

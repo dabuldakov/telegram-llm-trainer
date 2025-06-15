@@ -12,6 +12,7 @@ class Config:
     
     # Model
     MODEL_PATH = "outputs/fine_tuned_model"
+    TRAINING_LOGS_PATH = "logs"
     MAX_HISTORY = 5  # Количество сообщений в контексте
     MAX_LENGTH = 500  # Максимальная длина ответа
     MAX_CHAT_HISTORY = 10

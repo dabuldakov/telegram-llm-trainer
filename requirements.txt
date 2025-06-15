@@ -10,3 +10,4 @@ telebot
 python-dotenv
 bitsandbytes
 transformers[sentencepiece]
+wandb
