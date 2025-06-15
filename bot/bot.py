@@ -1,7 +1,7 @@
 import telebot
 import datetime
 import random
-from bot.chat_model_saiga_mistral import ChatModelSaigaMistral, generate_saiga
+from bot.chat_model_saiga_mistral import ChatModelSaigaMistral
 from bot.request import Request
 #from bot.chat_model import ChatModel
 from config import Config
@@ -12,8 +12,9 @@ bot = telebot.TeleBot(Config.TELEGRAM_BOT_TOKEN)
 #chat_model = ChatModel()
 chat_model_mistral = ChatModelSaigaMistral()
 history = ChatHistory()
-bot_name = "HuinyaBot"
+bot_name = "bot"
 imitator_name = "Timur Mukhtarov"
+DEFAULT_SYSTEM_PROMPT = "Ты русскоязычный автоматический ассистент. Ты разговариваешь с людьми и помогаешь им. \n"
 
 # Загружаем фразы один раз при старте
 with open("bot/warhammer_frazes.txt", encoding="utf-8") as f:
@@ -46,25 +47,32 @@ def emperor_command(message):
 def handle_message(message):
     try:
         user_message = message.text
+        chat_id = message.chat.id
+
+        if not message.from_user.is_bot:
+            history.add_message(chat_id, get_fio(message), user_message)
         
-        chat_model_mistral.add_user_message(user_message)
-        # Проверяем наличие упоминания бота
         if "@ochen_hueviy_bot" not in user_message:
             return 
         
-        # Генерируем ответ
-        prompt = chat_model_mistral.get_prompt()
+        history_messages = history.get_formatted_history(chat_id)
+        prompt = DEFAULT_SYSTEM_PROMPT + history_messages
 
-        with open("prompts.log", "a", encoding="utf-8") as f:
-            f.write(f"{datetime.datetime.now().isoformat()} | {prompt}\n{'-'*40}\n")
+        loggin_promt(prompt)
         
-        output = generate_saiga(prompt)
-        chat_model_mistral.add_bot_message(output)
-        # Отправляем
+        output = chat_model_mistral.generate_saiga(prompt)
+        history.add_message(chat_id, bot_name, output)
         bot.reply_to(message, output)
         
     except Exception as e:
-        bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")      
+        bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")   
+
+def get_fio(message):
+    return f"{message.from_user.first_name} {message.from_user.last_name}"
+
+def loggin_promt(prompt):
+    with open("prompts.log", "a", encoding="utf-8") as f:
+        f.write(f"{datetime.datetime.now().isoformat()} | {prompt}\n{'-'*40}\n")        
 
 #@bot.message_handler(func=lambda message: True)
 def handle_message(message):

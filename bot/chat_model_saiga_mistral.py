@@ -5,9 +5,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, 
 from config import Config
 
 MODEL_NAME = "IlyaGusev/saiga_mistral_7b"
-DEFAULT_MESSAGE_TEMPLATE = "<s>{role}\n{content}</s>"
-DEFAULT_RESPONSE_TEMPLATE = "<s>bot\n"
-DEFAULT_SYSTEM_PROMPT = "Ты — Сайга, русскоязычный автоматический ассистент. Ты разговариваешь с людьми и помогаешь им."
 token = Config.HUGGINGFACE_TOKEN
 
 # Initialize model components globally
@@ -38,59 +35,14 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
 generation_config = GenerationConfig.from_pretrained(MODEL_NAME)
 
 class ChatModelSaigaMistral:
-    def __init__(
-        self,
-        message_template=DEFAULT_MESSAGE_TEMPLATE,
-        system_prompt=DEFAULT_SYSTEM_PROMPT,
-        response_template=DEFAULT_RESPONSE_TEMPLATE
-    ):
-        self.message_template = message_template
-        self.response_template = response_template
-        self.system_prompt = system_prompt
-        self.max_history = getattr(Config, "MAX_CHAT_HISTORY", 10)
-        self.reset_conversation()
 
-    def reset_conversation(self):
-        self.messages = [{
-            "role": "system",
-            "content": self.system_prompt
-        }]
-
-    def add_user_message(self, message):
-        self.messages.append({
-            "role": "user",
-            "content": message
-        })
-        self._trim_history()
-
-    def add_bot_message(self, message):
-        self.messages.append({
-            "role": "bot",
-            "content": message
-        })
-        self._trim_history()
-
-    def _trim_history(self):
-        if len(self.messages) > self.max_history + 1:
-            self.messages = [self.messages[0]] + self.messages[-self.max_history:]
-    
-
-    def get_prompt(self):
-        final_text = ""
-        for message in self.messages:
-            message_text = self.message_template.format(**message)
-            final_text += message_text
-        final_text += DEFAULT_RESPONSE_TEMPLATE
-        return final_text.strip()
-
-def generate_saiga(prompt):
-    """Simplified generation function that only requires the prompt text"""
-    data = tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
-    data = {k: v.to(model.device) for k, v in data.items()}
-    output_ids = model.generate(
-        **data,
-        generation_config=generation_config
-    )[0]
-    output_ids = output_ids[len(data["input_ids"][0]):]
-    output = tokenizer.decode(output_ids, skip_special_tokens=True)
-    return output.strip()
+    def generate_saiga(prompt):
+        data = tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
+        data = {k: v.to(model.device) for k, v in data.items()}
+        output_ids = model.generate(
+            **data,
+            generation_config=generation_config
+        )[0]
+        output_ids = output_ids[len(data["input_ids"][0]):]
+        output = tokenizer.decode(output_ids, skip_special_tokens=True)
+        return output.strip()
