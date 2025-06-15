@@ -36,7 +36,7 @@ generation_config = GenerationConfig.from_pretrained(MODEL_NAME)
 
 class ChatModelSaigaMistral:
 
-    def generate_saiga(prompt):
+    def generate_saiga(self, prompt):
         data = tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
         data = {k: v.to(model.device) for k, v in data.items()}
         output_ids = model.generate(
