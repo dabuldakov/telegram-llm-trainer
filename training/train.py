@@ -75,10 +75,20 @@ data_collator = DataCollatorForLanguageModeling(
 peft_config = LoraConfig(
     r=16,  # Увеличенный rank для качества
     lora_alpha=32,
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj"],
-    lora_dropout=0.05,
+    target_modules=[                # Ключевые слои для адаптации
+        "q_proj",
+        "k_proj", 
+        "v_proj",
+        "o_proj",
+        "gate_proj",               # Важно для Mistral
+        "up_proj",                 # Дополнительные слои
+        "down_proj"                # для лучшего качества
+    ],
+    lora_dropout=0.05,             # Регуляризация
+    bias="lora_only",              # Только LoRA bias
     task_type="CAUSAL_LM",
-    bias="lora_only"
+    modules_to_save=["lm_head"],   # Сохраняем head для генерации
+    inference_mode=False
 )
 
 # Подготовка модели
@@ -109,22 +119,23 @@ training_args = TrainingArguments(
     logging_dir=logs_dir,
 
     # Распределённое обучение
-    per_device_train_batch_size=6,   
-    gradient_accumulation_steps=6,
+    per_device_train_batch_size=2, 
+    gradient_accumulation_steps=16,  
 
     # Оптимизация памяти
     bf16=True,                       # A100 с bfloat16
     fp16=False,
     gradient_checkpointing=True,     # Обязательно для 7B!
-    torch_compile=True,              # Ускорение на Ampere (A100)
+    torch_compile=False,              # Ускорение на Ampere (A100)
+    group_by_length=True,            # Улучшает эффективность паддинга
 
     # Параметры обучения
-    learning_rate=2e-5,
+    learning_rate=1e-5,
     num_train_epochs=3,
-    max_grad_norm=0.3,
+    max_grad_norm=0.5,
     warmup_ratio=0.1,
-    weight_decay=0.01,
-    lr_scheduler_type="cosine",
+    weight_decay=0.05,
+    lr_scheduler_type="cosine_with_restarts",
     optim="adamw_torch_fused",
 
     # Логирование
