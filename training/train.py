@@ -72,13 +72,14 @@ loggin_tokens(tokenized_dataset)
 # DataCollator для языкового моделирования
 data_collator = DataCollatorForLanguageModeling(
     tokenizer=tokenizer,
-    mlm=False  # Для causal LM
+    mlm=False,  # Для causal LM
+    pad_to_multiple_of=64
 )
 
 # Расширенная LoRA конфигурация
 peft_config = LoraConfig(
-    r=16,  # Увеличенный rank для качества
-    lora_alpha=32,
+    r=32,  # Увеличенный rank для качества
+    lora_alpha=64,
     target_modules=[                # Ключевые слои для адаптации
         "q_proj",
         "k_proj", 
@@ -123,8 +124,8 @@ training_args = TrainingArguments(
     logging_dir=logs_dir,
 
     # Распределённое обучение
-    per_device_train_batch_size=2, 
-    gradient_accumulation_steps=16,  
+    per_device_train_batch_size=12, 
+    gradient_accumulation_steps=4,  
 
     # Оптимизация памяти
     bf16=True,                       # A100 с bfloat16
@@ -134,7 +135,7 @@ training_args = TrainingArguments(
     group_by_length=True,            # Улучшает эффективность паддинга
 
     # Параметры обучения
-    learning_rate=1e-5,
+    learning_rate=2e-5,
     num_train_epochs=3,
     max_grad_norm=0.5,
     warmup_ratio=0.1,
