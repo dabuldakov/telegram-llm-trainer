@@ -27,7 +27,8 @@ fsdp_config = {
     "fsdp_transformer_layer_cls_to_wrap": ["MistralDecoderLayer"],
     "fsdp_sharding_strategy": 1,  # FULL_SHARD
     "mixed_precision": "bf16",
-    "limit_all_gathers": True
+    "limit_all_gathers": True,
+    "use_orig_params": True
 }
 
 # Инициализация распределённого обучения
@@ -121,6 +122,10 @@ trainer = Trainer(
     fsdp_config=fsdp_config
 )
 
-# Запуск обучения
+# 4. Запуск обучения
 trainer.train()
-trainer.save_model(output_dir)
+
+# 5. Сохранение модели (только на главном процессе)
+if torch.distributed.get_rank() == 0:
+    trainer.save_model(output_dir)
+    tokenizer.save_pretrained(output_dir)

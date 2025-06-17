@@ -9,8 +9,8 @@ class Config:
 
     #statistics wandb
     WANDB_TOKEN= os.environ['WANDB_TOKEN']
-
-    LOCAL_RANK=2
+    
+    LOCAL_RANK=os.environ["LOCAL_RANK"]
 
     #Dataset from chat history
     DATA_SET_PATH = "data/processed_dataset"
