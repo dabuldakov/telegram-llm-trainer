@@ -57,6 +57,10 @@ tokenized_dataset = dataset.map(
     remove_columns=["text"]  # Удаляем исходный текст
 )
 
+# Проверьте распределение длин
+lengths = [len(x["input_ids"]) for x in tokenized_dataset]
+print(f"Средняя длина: {sum(lengths)/len(lengths)}")
+
 def loggin_tokens(tokenized_dataset):
     sample = tokenized_dataset[0]
     with open(f"{logs_dir}/tokens.log", "a", encoding="utf-8") as f:
