@@ -7,6 +7,9 @@ class Config:
     #Huggingface LLM site
     HUGGINGFACE_TOKEN = os.environ['HUGGINGFACE_TOKEN']
 
+    #statistics wandb
+    WANDB_TOKEN = os.environ['WANDB_TOKEN']
+
     #Dataset from chat history
     DATA_SET_PATH = "data/processed_dataset"
     

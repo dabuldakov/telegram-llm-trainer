@@ -9,6 +9,7 @@ from transformers import (
 from datasets import load_from_disk
 from huggingface_hub import login
 import torch
+import wandb
 from config import Config
 
 # Конфигурация
@@ -17,6 +18,7 @@ dataset_path = Config.DATA_SET_PATH
 output_dir = Config.MODEL_PATH
 logs_dir = Config.TRAINING_LOGS_PATH
 token = Config.HUGGINGFACE_TOKEN
+wandb_token = Config.WANDB_TOKEN
 
 # Для Mistral-7B на 2x GPU:
 fsdp_config = {
@@ -26,6 +28,7 @@ fsdp_config = {
 
 # Authorization
 login(token, add_to_git_credential=False)
+wandb.login(key=wandb_token)
 
 # Загрузка данных
 dataset = load_from_disk(dataset_path)
