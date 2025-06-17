@@ -12,7 +12,7 @@ from huggingface_hub import login
 import torch
 import wandb
 from config import Config
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 # Конфигурация
 model_name = "mistralai/Mistral-7B-v0.1"
@@ -22,6 +22,8 @@ logs_dir = Config.TRAINING_LOGS_PATH
 token = Config.HUGGINGFACE_TOKEN
 wandb_token = Config.WANDB_TOKEN
 context_length = 512
+
+torch._dynamo.config.suppress_errors = True
 
 # Authorization
 login(token, add_to_git_credential=False)
@@ -84,11 +86,20 @@ model = AutoModelForCausalLM.from_pretrained(
     model_name,
     quantization_config=bnb_config,
     device_map="auto",
-    use_flash_attention_2=True,
+    attn_implementation="sdpa",
     torch_dtype=torch.bfloat16
 )
 
+model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
+
 model = get_peft_model(model, peft_config)
+
+# Принудительная проверка градиентов
+for name, param in model.named_parameters():
+    if "lora" in name:  # Только LoRA параметры должны иметь градиенты
+        param.requires_grad = True
+    else:
+        param.requires_grad = False
 
 # Параметры обучения
 training_args = TrainingArguments(
@@ -98,7 +109,7 @@ training_args = TrainingArguments(
     logging_dir=logs_dir,
 
     # Распределённое обучение
-    per_device_train_batch_size=8,   
+    per_device_train_batch_size=6,   
     gradient_accumulation_steps=6,
 
     # Оптимизация памяти
@@ -122,7 +133,9 @@ training_args = TrainingArguments(
 
     # Сохранение
     save_steps=2000,          
-    save_total_limit=2
+    save_total_limit=2,
+
+    remove_unused_columns=False
 )
 
 trainer = Trainer(
