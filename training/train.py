@@ -10,6 +10,7 @@ from datasets import load_from_disk
 from huggingface_hub import login
 import torch
 import wandb
+import torch.distributed as dist
 from config import Config
 
 # Конфигурация
@@ -19,16 +20,26 @@ output_dir = Config.MODEL_PATH
 logs_dir = Config.TRAINING_LOGS_PATH
 token = Config.HUGGINGFACE_TOKEN
 wandb_token = Config.WANDB_TOKEN
+local_rank = Config.LOCAL_RANK
 
 # Для Mistral-7B на 2x GPU:
 fsdp_config = {
     "fsdp_transformer_layer_cls_to_wrap": ["MistralDecoderLayer"],
-    "fsdp_sharding_strategy": 1  # FULL_SHARD
+    "fsdp_sharding_strategy": 1,  # FULL_SHARD
+    "mixed_precision": "bf16",
+    "limit_all_gathers": True
 }
+
+# Инициализация распределённого обучения
+def setup_distributed():
+    dist.init_process_group(backend="nccl")
+    torch.cuda.set_device(int(local_rank))
+
+setup_distributed()
 
 # Authorization
 login(token, add_to_git_credential=False)
-wandb.login(key=wandb_token)
+wandb.login(key=wandb_token, force=True, relogin=True)
 
 # Загрузка данных
 dataset = load_from_disk(dataset_path)
@@ -63,7 +74,7 @@ data_collator = DataCollatorForLanguageModeling(
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
     torch_dtype=torch.bfloat16,
-    device_map="auto"
+    device_map=None
 )
 
 # Параметры обучения
@@ -74,10 +85,10 @@ training_args = TrainingArguments(
     logging_dir=logs_dir,
 
     # Распределённое обучение
-    num_devices=2,                    # 2 GPU
     per_device_train_batch_size=10,   # 10 на каждом GPU → глобальный батч 20
     gradient_accumulation_steps=3,    # Эффективный батч = 10*3*2 = 60
-    fsdp="full_shard auto_wrap",      # Оптимально для Mistral на 2+ GPU
+    fsdp_config=fsdp_config,
+    fsdp="full_shard",  # Включение FSDP
 
     # Оптимизация памяти
     bf16=True,                       # A100 с bfloat16
@@ -89,7 +100,7 @@ training_args = TrainingArguments(
     num_train_epochs=2,
     warmup_ratio=0.05,
     lr_scheduler_type="cosine",
-    optim="adamw_torch_fused",
+    optim="adamw_anyprecision",
     weight_decay=0.01,
 
     # Логирование
@@ -106,7 +117,8 @@ trainer = Trainer(
     args=training_args,
     train_dataset=tokenized_dataset,
     tokenizer=tokenizer,
-    data_collator=data_collator  # Критически важно для CausalLM!
+    data_collator=data_collator,  # Критически важно для CausalLM!
+    fsdp_config=fsdp_config
 )
 
 # Запуск обучения

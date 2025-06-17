@@ -8,7 +8,9 @@ class Config:
     HUGGINGFACE_TOKEN = os.environ['HUGGINGFACE_TOKEN']
 
     #statistics wandb
-    WANDB_TOKEN = os.environ['WANDB_TOKEN']
+    WANDB_TOKEN= os.environ['WANDB_TOKEN']
+
+    LOCAL_RANK=2
 
     #Dataset from chat history
     DATA_SET_PATH = "data/processed_dataset"
