@@ -57,9 +57,10 @@ tokenized_dataset = dataset.map(
     remove_columns=["text"]  # Удаляем исходный текст
 )
 
-# Проверьте распределение длин
-lengths = [len(x["input_ids"]) for x in tokenized_dataset]
-print(f"Средняя длина: {sum(lengths)/len(lengths)}")
+def logging_length(tokenized_dataset):
+    lengths = [len(x["input_ids"]) for x in tokenized_dataset]
+    with open(f"{logs_dir}/tokens.log", "a", encoding="utf-8") as f:
+        f.write(f"{datetime.datetime.now().isoformat()} Средняя длина: {sum(lengths)/len(lengths)}")  
 
 def loggin_tokens(tokenized_dataset):
     sample = tokenized_dataset[0]
@@ -68,6 +69,7 @@ def loggin_tokens(tokenized_dataset):
         f.write(f"{datetime.datetime.now().isoformat()} Декодированный текст: {tokenizer.decode(sample['input_ids'])}\n")  
 
 loggin_tokens(tokenized_dataset)
+logging_length(tokenized_dataset)
 
 # DataCollator для языкового моделирования
 data_collator = DataCollatorForLanguageModeling(
@@ -78,8 +80,8 @@ data_collator = DataCollatorForLanguageModeling(
 
 # Расширенная LoRA конфигурация
 peft_config = LoraConfig(
-    r=32,  # Увеличенный rank для качества
-    lora_alpha=64,
+    r=16,  # Увеличенный rank для качества
+    lora_alpha=32,
     target_modules=[                # Ключевые слои для адаптации
         "q_proj",
         "k_proj", 
@@ -89,7 +91,7 @@ peft_config = LoraConfig(
         "up_proj",                 # Дополнительные слои
         "down_proj"                # для лучшего качества
     ],
-    lora_dropout=0.05,             # Регуляризация
+    lora_dropout=0.01,             # Регуляризация
     bias="lora_only",              # Только LoRA bias
     task_type="CAUSAL_LM",
     modules_to_save=["lm_head"],   # Сохраняем head для генерации
@@ -124,8 +126,8 @@ training_args = TrainingArguments(
     logging_dir=logs_dir,
 
     # Распределённое обучение
-    per_device_train_batch_size=12, 
-    gradient_accumulation_steps=4,  
+    per_device_train_batch_size=2, 
+    gradient_accumulation_steps=16,  
 
     # Оптимизация памяти
     bf16=True,                       # A100 с bfloat16
@@ -135,7 +137,7 @@ training_args = TrainingArguments(
     group_by_length=True,            # Улучшает эффективность паддинга
 
     # Параметры обучения
-    learning_rate=2e-5,
+    learning_rate=1e-5,
     num_train_epochs=3,
     max_grad_norm=0.5,
     warmup_ratio=0.1,
