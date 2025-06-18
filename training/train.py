@@ -41,20 +41,27 @@ tokenizer.pad_token = tokenizer.eos_token
 
 # Конфигурация 4-bit квантования
 bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.bfloat16,
-    bnb_4bit_use_double_quant=True
+    load_in_8bit=True,  # 8-bit для сохранения качества
+    llm_int8_threshold=6.0,
+    torch_dtype=torch.bfloat16
 )
 
 # Токенизация данных
 def tokenize_function(examples):
-    return tokenizer(examples["text"], truncation=True, max_length=context_length)
+    return tokenizer(
+        examples["text"], 
+        truncation=True, 
+        max_length=context_length,
+        stride=256,  # Перекрытие для сохранения контекста
+        padding="max_length",
+        return_overflowing_tokens=True
+        )
 
 tokenized_dataset = dataset.map(
     tokenize_function,
     batched=True,
-    remove_columns=["text"]  # Удаляем исходный текст
+    remove_columns=["text"],  # Удаляем исходный текст
+    num_proc=8  # Максимальный параллелизм
 )
 
 def logging_length(tokenized_dataset):
@@ -91,10 +98,10 @@ peft_config = LoraConfig(
         "up_proj",                 # Дополнительные слои
         "down_proj"                # для лучшего качества
     ],
-    lora_dropout=0.01,             # Регуляризация
+    lora_dropout=0.02,             # Регуляризация
     bias="lora_only",              # Только LoRA bias
     task_type="CAUSAL_LM",
-    modules_to_save=["lm_head"],   # Сохраняем head для генерации
+    modules_to_save=["lm_head", "embed_tokens"],  # Сохраняем ключевые слои
     inference_mode=False
 )
 
@@ -103,8 +110,9 @@ model = AutoModelForCausalLM.from_pretrained(
     model_name,
     quantization_config=bnb_config,
     device_map="auto",
-    attn_implementation="sdpa",
-    torch_dtype=torch.bfloat16
+    use_flash_attention_2=True,
+    torch_dtype=torch.bfloat16,
+    attn_implementation="flash_attention_2"
 )
 
 model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
@@ -126,14 +134,13 @@ training_args = TrainingArguments(
     logging_dir=logs_dir,
 
     # Распределённое обучение
-    per_device_train_batch_size=2, 
-    gradient_accumulation_steps=16,  
+    per_device_train_batch_size=4, 
+    gradient_accumulation_steps=8,  
 
     # Оптимизация памяти
     bf16=True,                       # A100 с bfloat16
-    fp16=False,
     gradient_checkpointing=True,     # Обязательно для 7B!
-    torch_compile=False,              # Ускорение на Ampere (A100)
+    torch_compile=True,              # Ускорение на Ampere (A100)
     group_by_length=True,            # Улучшает эффективность паддинга
 
     # Параметры обучения
@@ -141,7 +148,7 @@ training_args = TrainingArguments(
     num_train_epochs=3,
     max_grad_norm=0.5,
     warmup_ratio=0.1,
-    weight_decay=0.05,
+    weight_decay=0.005,  # Меньше регуляризация
     lr_scheduler_type="cosine_with_restarts",
     optim="adamw_torch_fused",
 
@@ -153,7 +160,8 @@ training_args = TrainingArguments(
     save_steps=2000,          
     save_total_limit=2,
 
-    remove_unused_columns=False
+    remove_unused_columns=False,
+    dataloader_num_workers=8
 )
 
 trainer = Trainer(
