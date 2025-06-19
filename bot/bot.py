@@ -1,7 +1,7 @@
 import telebot
 import datetime
 import random
-from bot.chat_model_saiga_mistral import ChatModelSaigaMistral
+#from bot.chat_model_saiga_mistral import ChatModelSaigaMistral
 from bot.chat_model import ChatModel
 from config import Config
 from bot.chat_history import ChatHistory
@@ -9,7 +9,7 @@ from bot.chat_history import ChatHistory
 # Инициализация
 bot = telebot.TeleBot(Config.TELEGRAM_BOT_TOKEN)
 chat_model = ChatModel()
-chat_model_mistral = ChatModelSaigaMistral()
+#chat_model_mistral = ChatModelSaigaMistral()
 history = ChatHistory()
 bot_name = "bot"
 imitator_name = "Timur Mukhtarov"
@@ -61,9 +61,9 @@ def handle_message(message):
 
         loggin_promt(prompt)
         
-        output = chat_model_mistral.generate_saiga(prompt)
-        history.add_message(chat_id, bot_name, output)
-        bot.reply_to(message, output)
+        #output = chat_model_mistral.generate_saiga(prompt)
+        #history.add_message(chat_id, bot_name, output)
+        #bot.reply_to(message, output)
         
     except Exception as e:
         bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")        
