@@ -80,9 +80,9 @@ def handle_message(message):
         if "@ochen_hueviy_bot" not in user_message:
             return 
         
-        discusion = history.get_formatted_history(chat_id)
+        #discusion = history.get_formatted_history(chat_id)
         
-        prompt = f"{DEFAULT_CHAT_PROMT} [USER:{imitator_name}]. \n Контекст: {discusion}"
+        prompt = f"{DEFAULT_CHAT_PROMT} [USER:{imitator_name}]. \n Контекст: {user_message}"
 
         loggin_promt(prompt)
 
