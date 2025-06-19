@@ -3,9 +3,11 @@ from transformers import (
     AutoTokenizer
 )
 import torch
+import datetime
 from config import Config
 
 model_path = Config.MODEL_PATH
+logs_dir = Config.TRAINING_LOGS_PATH
 
 class ChatModel:
     def __init__(self):
@@ -25,9 +27,18 @@ class ChatModel:
             do_sample=True,
             temperature=0.7
         )
+
+        self.log_output_ids(output_ids)
+        
         # Убедимся, что есть сгенерированные токены
         if len(output_ids[0]) > len(data["input_ids"][0]):
             # Берем только сгенерированные токены (исключая промпт)
             output_ids = output_ids[0][len(data["input_ids"][0]):]
             return self.tokenizer.decode(output_ids, skip_special_tokens=True).strip()
         return ""  # Возвращаем пустую строку, если ничего не сгенерировано
+    
+def log_output_ids(self, output_ids):
+        decoded_text = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        with open(f"{logs_dir}/output_ids.log", "a", encoding="utf-8") as f:
+            f.write(f"{datetime.datetime.now().isoformat()} output_ids: {output_ids.tolist()}\n")
+            f.write(f"{datetime.datetime.now().isoformat()} detokenized: {decoded_text}\n")
