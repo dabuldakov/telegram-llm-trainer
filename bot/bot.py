@@ -2,14 +2,13 @@ import telebot
 import datetime
 import random
 from bot.chat_model_saiga_mistral import ChatModelSaigaMistral
-from bot.request import Request
-#from bot.chat_model import ChatModel
+from bot.chat_model import ChatModel
 from config import Config
 from bot.chat_history import ChatHistory
 
 # Инициализация
 bot = telebot.TeleBot(Config.TELEGRAM_BOT_TOKEN)
-#chat_model = ChatModel()
+chat_model = ChatModel()
 chat_model_mistral = ChatModelSaigaMistral()
 history = ChatHistory()
 bot_name = "bot"
@@ -44,7 +43,7 @@ def emperor_command(message):
         bot.send_message(message, f"Ошибка при получении фразы: {str(e)}")
 
 
-@bot.message_handler(func=lambda message: True)
+#@bot.message_handler(func=lambda message: True)
 def handle_message(message):
     try:
         user_message = message.text
@@ -66,16 +65,9 @@ def handle_message(message):
         bot.reply_to(message, output)
         
     except Exception as e:
-        bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")   
+        bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")        
 
-def get_fio(message):
-    return f"{message.from_user.first_name} {message.from_user.last_name}"
-
-def loggin_promt(prompt):
-    with open("prompts.log", "a", encoding="utf-8") as f:
-        f.write(f"{datetime.datetime.now().isoformat()} | {prompt}\n{'-'*40}\n")        
-
-#@bot.message_handler(func=lambda message: True)
+@bot.message_handler(func=lambda message: True)
 def handle_message(message):
     try:
         chat_id = message.chat.id
@@ -91,17 +83,23 @@ def handle_message(message):
         prompt = f"{DEFAULT_CHAT_PROMT} {imitator_name}. \n Контекст: {discusion}"
 
         loggin_promt(prompt)
-        
-        request = Request(user=imitator_name, prompt=prompt)
+
         # Генерируем ответ
-        #bot_response = chat_model.generate(request, chat_id)
+        output = chat_model.generate(prompt)
 
         # Добавляем ответ в историю и отправляем
-        #history.add_message(chat_id, bot_name, bot_response)
-        #bot.reply_to(message, bot_response)
+        history.add_message(chat_id, bot_name, output)
+        bot.reply_to(message, output)
         
     except Exception as e:
         bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")
+
+def get_fio(message):
+    return f"{message.from_user.first_name} {message.from_user.last_name}"
+
+def loggin_promt(prompt):
+    with open("prompts.log", "a", encoding="utf-8") as f:
+        f.write(f"{datetime.datetime.now().isoformat()} | {prompt}\n{'-'*40}\n")       
 
 if __name__ == "__main__":
     print("Бот запущен...")
