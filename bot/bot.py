@@ -74,14 +74,20 @@ def handle_message(message):
         chat_id = message.chat.id
         user_message = message.text
 
+        # Проверка на название чата
+        if not hasattr(message, "chat") or getattr(message.chat, "title", None) != "Группа хуюпа" or getattr(message.chat, "title", None) != "Хуйня":
+            return
+
         if not message.from_user.is_bot:
             history.add_message(chat_id, get_fio(message), user_message)
         
         if "@ochen_hueviy_bot" not in user_message:
             return 
         
+        # Удаляем упоминание бота из текста
+        user_message = user_message.replace("@ochen_hueviy_bot", "").strip()
+       
         #discusion = history.get_formatted_history(chat_id)
-        
         #prompt = f"{DEFAULT_CHAT_PROMT} [USER:{imitator_name}]. \n Контекст: {user_message}"
 
         loggin_promt(user_message)
