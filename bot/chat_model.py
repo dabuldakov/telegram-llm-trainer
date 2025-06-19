@@ -21,9 +21,9 @@ class ChatModel:
 
         output_ids = self.model.generate(
             **data,
-            max_new_tokens=256,
-            do_sample=False,
-            temperature=0.3
+            max_new_tokens=1024,
+            do_sample=True,
+            temperature=0.7
         )
         # Убедимся, что есть сгенерированные токены
         if len(output_ids[0]) > len(data["input_ids"][0]):
