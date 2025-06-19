@@ -75,7 +75,8 @@ def handle_message(message):
         user_message = message.text
 
         # Проверка на название чата
-        if not hasattr(message, "chat") or getattr(message.chat, "title", None) != "Группа хуюпа" or getattr(message.chat, "title", None) != "Хуйня":
+        allowed_titles = ["Группа хуюпа", "Хуйня"]
+        if not hasattr(message, "chat") or getattr(message.chat, "title", None) not in allowed_titles:
             return
 
         if not message.from_user.is_bot:
