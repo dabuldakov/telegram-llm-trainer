@@ -43,6 +43,10 @@ class ChatModelSaigaMistral:
             **data,
             generation_config=generation_config
         )[0]
-        output_ids = output_ids[len(data["input_ids"][0]):]
-        output = tokenizer.decode(output_ids, skip_special_tokens=True)
-        return output.strip()
+
+        # Убедимся, что есть сгенерированные токены
+        if len(output_ids[0]) > len(data["input_ids"][0]):
+            # Берем только сгенерированные токены (исключая промпт)
+            output_ids = output_ids[0][len(data["input_ids"][0]):]
+            return self.tokenizer.decode(output_ids, skip_special_tokens=True).strip()
+        return ""  # Возвращаем пустую строку, если ничего не сгенерировано
