@@ -15,6 +15,7 @@ bot_name = "bot"
 imitator_name = "Timur Mukhtarov"
 DEFAULT_SYSTEM_PROMPT = "Ты русскоязычный автоматический ассистент. Ты разговариваешь с людьми и помогаешь им. \n"
 DEFAULT_CHAT_PROMT = "Ты имитируешь чат. Отвечай как: "
+logs_dir = Config.TRAINING_LOGS_PATH
 
 # Загружаем фразы один раз при старте
 with open("bot/warhammer_frazes.txt", encoding="utf-8") as f:
@@ -98,7 +99,7 @@ def get_fio(message):
     return f"{message.from_user.first_name} {message.from_user.last_name}"
 
 def loggin_promt(prompt):
-    with open("prompts.log", "a", encoding="utf-8") as f:
+    with open(f"{logs_dir}/prompts.log", "a", encoding="utf-8") as f:
         f.write(f"{datetime.datetime.now().isoformat()} | {prompt}\n{'-'*40}\n")       
 
 if __name__ == "__main__":
