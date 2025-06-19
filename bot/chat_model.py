@@ -23,7 +23,7 @@ class ChatModel:
             **data,
             max_new_tokens=512,
             do_sample=True,
-            temperature=0.7
+            temperature=0.5
         )
         # Убедимся, что есть сгенерированные токены
         if len(output_ids[0]) > len(data["input_ids"][0]):
