@@ -81,7 +81,8 @@ def handle_message(message):
             return 
         
         discusion = history.get_formatted_history(chat_id)
-        prompt = f"{DEFAULT_CHAT_PROMT} {imitator_name}. \n Контекст: {discusion}"
+        
+        prompt = f"{DEFAULT_CHAT_PROMT} [USER:{imitator_name}]. \n Контекст: {discusion}"
 
         loggin_promt(prompt)
 

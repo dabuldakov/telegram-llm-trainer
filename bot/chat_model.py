@@ -17,11 +17,13 @@ class ChatModel:
 
     def generate(self, promt):
         inputs = self.tokenizer(promt, return_tensors="pt").to("cuda")
-        
-        outputs = self.model.generate(
-            **inputs,
+        data = {k: v.to(self.model.device) for k, v in inputs.items()}
+
+        output_ids = self.model.generate(
+            **data,
             max_new_tokens=128,
             do_sample=True,
             temperature=0.7
         )
-        return self.tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
+        output_ids = output_ids[len(data["input_ids"][0]):]
+        return self.tokenizer.decode(output_ids[0], skip_special_tokens=True).strip()
