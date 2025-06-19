@@ -82,12 +82,12 @@ def handle_message(message):
         
         #discusion = history.get_formatted_history(chat_id)
         
-        prompt = f"{DEFAULT_CHAT_PROMT} [USER:{imitator_name}]. \n Контекст: {user_message}"
+        #prompt = f"{DEFAULT_CHAT_PROMT} [USER:{imitator_name}]. \n Контекст: {user_message}"
 
-        loggin_promt(prompt)
+        loggin_promt(user_message)
 
         # Генерируем ответ
-        output = chat_model.generate(prompt)
+        output = chat_model.generate(user_message)
 
         # Добавляем ответ в историю и отправляем
         history.add_message(chat_id, bot_name, output)
