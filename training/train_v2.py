@@ -70,8 +70,8 @@ model = AutoModelForCausalLM.from_pretrained(
 # Параметры обучения
 training_args = TrainingArguments(
     output_dir=output_dir,
-    per_device_train_batch_size=6,
-    gradient_accumulation_steps=4,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=8,
     learning_rate=2e-5,
     num_train_epochs=3,
     logging_steps=10,
