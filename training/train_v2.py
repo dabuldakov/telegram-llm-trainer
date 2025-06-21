@@ -70,8 +70,8 @@ model = AutoModelForCausalLM.from_pretrained(
 # Параметры обучения
 training_args = TrainingArguments(
     output_dir=output_dir,
-    per_device_train_batch_size=4,
-    gradient_accumulation_steps=8,
+    per_device_train_batch_size=6,
+    gradient_accumulation_steps=4,
     learning_rate=2e-5,
     num_train_epochs=3,
     logging_steps=10,
@@ -81,8 +81,7 @@ training_args = TrainingArguments(
     optim="adamw_torch",
     gradient_checkpointing=True,
     remove_unused_columns=False,
-    report_to="wandb",
-    max_grad_norm=0.5
+    report_to="wandb"
 )
 
 trainer = Trainer(
