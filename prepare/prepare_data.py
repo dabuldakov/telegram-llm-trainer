@@ -2,7 +2,7 @@ from datasets import Dataset
 import json
 import os
 
-def process_chat_data(input_file, output_dir):
+def process_chat_data(input_file, output_dir, only_one_user):
     with open(input_file) as f:
         chat_data = json.load(f)
 
@@ -21,8 +21,8 @@ def process_chat_data(input_file, output_dir):
             and msg.get("text") 
             and "forwarded_from" not in msg
             and not is_link_only(msg)
+            and (not only_one_user or msg.get("from") == only_one_user)
             )
-
     ]
     
     # Форматируем текст сообщений
@@ -70,4 +70,4 @@ def statistic(texts):
         print(f"{k}: {v}")        
 
 # Пример использования
-process_chat_data("data/chat_history.json", "data")
+process_chat_data("data/chat_history.json", "data", "")
