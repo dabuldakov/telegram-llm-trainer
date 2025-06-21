@@ -31,7 +31,12 @@ tokenizer.pad_token = tokenizer.eos_token
 
 # Токенизация данных
 def tokenize_function(examples):
-    return tokenizer(examples["text"], truncation=True, max_length=512)
+    return tokenizer(
+        examples["text"], 
+        truncation=True, 
+        max_length=512,
+        padding="longest",
+        return_tensors="pt").to("cuda")
 
 tokenized_dataset = dataset.map(
     tokenize_function,
@@ -57,7 +62,8 @@ logging_length(tokenized_dataset)
 # DataCollator для языкового моделирования
 data_collator = DataCollatorForLanguageModeling(
     tokenizer=tokenizer,
-    mlm=False  # Для causal LM
+    mlm=False,  # Для causal LM
+    pad_to_multiple_of=8
 )
 
 # Подготовка модели
