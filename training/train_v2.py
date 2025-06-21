@@ -81,7 +81,8 @@ training_args = TrainingArguments(
     optim="adamw_torch",
     gradient_checkpointing=True,
     remove_unused_columns=False,
-    report_to="wandb"
+    report_to="wandb",
+    max_grad_norm=0.5
 )
 
 trainer = Trainer(
