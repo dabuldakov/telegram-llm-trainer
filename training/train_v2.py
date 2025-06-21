@@ -35,7 +35,7 @@ def tokenize_function(examples):
         examples["text"], 
         truncation=True, 
         max_length=512,
-        padding="longest",
+        padding="max_length",
         return_tensors="pt").to("cuda")
 
 tokenized_dataset = dataset.map(
@@ -88,7 +88,8 @@ training_args = TrainingArguments(
     gradient_checkpointing=True,
     remove_unused_columns=False,
     report_to="wandb",
-    max_grad_norm=0.5
+    max_grad_norm=0.5,
+    warmup_ratio=0.05
 )
 
 trainer = Trainer(
