@@ -34,8 +34,7 @@ def tokenize_function(examples):
     return tokenizer(
         examples["text"], 
         truncation=True, 
-        max_length=512,
-        return_tensors="pt").to("cuda")
+        max_length=512)
 
 tokenized_dataset = dataset.map(
     tokenize_function,
@@ -62,7 +61,6 @@ logging_length(tokenized_dataset)
 data_collator = DataCollatorForLanguageModeling(
     tokenizer=tokenizer,
     mlm=False,  # Для causal LM
-    pad_to_multiple_of=8
 )
 
 # Подготовка модели
