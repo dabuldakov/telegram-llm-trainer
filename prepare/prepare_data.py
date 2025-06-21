@@ -30,7 +30,7 @@ def process_chat_data(input_file, output_dir, only_one_user):
     
     # Форматируем текст сообщений
     texts = [
-        f"<|user|>{msg['from']} |>{msg['text']}</|user|>" 
+        f"<|user|>{msg['from']}|>{msg['text']}</|user|>" 
         for msg in messages
     ]
 
