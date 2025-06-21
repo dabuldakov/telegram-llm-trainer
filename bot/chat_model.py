@@ -18,7 +18,7 @@ class ChatModel:
             torch_dtype=torch.bfloat16)
 
     def generate(self, promt):
-        inputs = self.tokenizer(promt, return_tensors="pt").to("cuda")
+        inputs = self.tokenizer(promt, return_tensors="pt", add_special_tokens=False).to("cuda")
         data = {k: v.to(self.model.device) for k, v in inputs.items()}
 
         output_ids = self.model.generate(
@@ -26,16 +26,13 @@ class ChatModel:
             max_new_tokens=512,
             do_sample=True,
             temperature=0.7
-        )
+        )[0]
 
         self.log_output_ids(output_ids)
 
-        # Убедимся, что есть сгенерированные токены
-        if len(output_ids[0]) > len(data["input_ids"][0]):
-            # Берем только сгенерированные токены (исключая промпт)
-            output_ids = output_ids[0][len(data["input_ids"][0]):]
-            return self.tokenizer.decode(output_ids, skip_special_tokens=True).strip()
-        return ""  # Возвращаем пустую строку, если ничего не сгенерировано
+        output_ids = output_ids[len(data["input_ids"][0]):]
+        output = self.tokenizer.decode(output_ids, skip_special_tokens=True)
+        return output.strip()
     
     def log_output_ids(self, output_ids):
         decoded_text = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
