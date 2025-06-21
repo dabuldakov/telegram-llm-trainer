@@ -1,4 +1,5 @@
 import datetime
+import os
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -19,6 +20,7 @@ output_dir = Config.MODEL_PATH
 logs_dir = Config.TRAINING_LOGS_PATH
 token = Config.HUGGINGFACE_TOKEN
 wandb_token = Config.WANDB_TOKEN
+user_names_dir = Config.DATA_USER_NAMES
 
 # Authorization
 login(token, add_to_git_credential=False)
@@ -28,6 +30,15 @@ wandb.login(key=wandb_token)
 dataset = load_from_disk(dataset_path)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 tokenizer.pad_token = tokenizer.eos_token
+tokenizer.add_special_tokens({
+    "additional_special_tokens": ["<|user|>", "</|user|>", "|>"]
+})
+
+if os.path.exists(user_names_dir):
+    with open(user_names_dir, "r", encoding="utf-8") as f:
+        user_tokens = [line.strip() for line in f if line.strip()]
+    tokenizer.add_tokens(user_tokens)
+    
 
 # Токенизация данных
 def tokenize_function(examples):
@@ -69,6 +80,7 @@ model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.bfloat16,
     device_map="auto"
 )
+model.resize_token_embeddings(len(tokenizer))
 
 # Параметры обучения
 training_args = TrainingArguments(

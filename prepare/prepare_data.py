@@ -14,20 +14,23 @@ def process_chat_data(input_file, output_dir, only_one_user):
         return False    
     
     # Извлекаем только нужные сообщения
-    messages = [
-        msg for msg in chat_data.get("messages", [])
+    unique_names = set()
+    messages = []
+    for msg in chat_data.get("messages", []):
         if (
             msg.get("type") == "message" 
             and msg.get("text") 
             and "forwarded_from" not in msg
             and not is_link_only(msg)
             and (not only_one_user or msg.get("from") == only_one_user)
-            )
-    ]
+        ):
+            messages.append(msg)
+            if msg.get("from"):
+                unique_names.add(msg.get("from"))
     
     # Форматируем текст сообщений
     texts = [
-        f"[USER:{msg['from']}] {msg['text']}" 
+        f"<|user|>{msg['from']} |>{msg['text']}</|user|>" 
         for msg in messages
     ]
 
@@ -38,6 +41,12 @@ def process_chat_data(input_file, output_dir, only_one_user):
     with open(texts_file_path, "w", encoding="utf-8") as f:
         for text in texts:
             f.write(text + "\n")
+
+    # Сохраняем уникальные имена в файл names.txt
+    names_file_path = os.path.join(output_dir, "names.txt")
+    with open(names_file_path, "w", encoding="utf-8") as f:
+        for name in sorted(unique_names):
+            f.write(name + "\n")        
     
     # Создаем и сохраняем датасет
     dataset = Dataset.from_dict({"text": texts})
