@@ -75,7 +75,7 @@ training_args = TrainingArguments(
     output_dir=output_dir,
     per_device_train_batch_size=4,
     gradient_accumulation_steps=8,
-    learning_rate=3e-6,
+    learning_rate=1e-5,
     num_train_epochs=3,
     logging_steps=10,
     bf16=True,
@@ -85,7 +85,8 @@ training_args = TrainingArguments(
     gradient_checkpointing=True,
     remove_unused_columns=False,
     report_to="wandb",
-    max_grad_norm=0.3
+    max_grad_norm=0.3,
+    warmup_ratio=0.05
 )
 
 trainer = Trainer(
