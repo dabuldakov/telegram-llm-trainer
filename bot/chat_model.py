@@ -23,7 +23,7 @@ class ChatModel:
 
         output_ids = self.model.generate(
             **data,
-            max_new_tokens=1024,
+            max_new_tokens=512,
             do_sample=True,
             temperature=0.7
         )
