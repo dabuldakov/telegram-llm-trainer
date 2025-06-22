@@ -31,7 +31,7 @@ dataset = load_from_disk(dataset_path)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.add_special_tokens({
-    "additional_special_tokens": ["<|user|>", "</|user|>", "|>"]
+    "additional_special_tokens": ["<|user|>", "</|user|>", "|>", "<|assistant|>", "</|assistant|>"]
 })
 
 sample = "<|user|>Дмитрий Булдаков|>Да у нас нет долов</|user|>"
