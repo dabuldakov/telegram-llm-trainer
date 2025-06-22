@@ -36,7 +36,7 @@ class ChatModel:
     
     def log_output_ids(self, output_ids, data):
         output_ids = output_ids[len(data["input_ids"][0]):]
-        decoded_text = self.tokenizer.decode(output_ids[0])
+        decoded_text = self.tokenizer.decode(output_ids)
         with open(f"{logs_dir}/output_ids.log", "a", encoding="utf-8") as f:
             f.write(f"{datetime.datetime.now().isoformat()} output_ids: {output_ids.tolist()}\n")
             f.write(f"{datetime.datetime.now().isoformat()} detokenized: {decoded_text}\n")
