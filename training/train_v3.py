@@ -14,7 +14,7 @@ import wandb
 from config import Config
 
 # Конфигурация
-model_name = "mistralai/Mistral-7B-v0.1"
+model_name = "mistralai/Mixtral-8x7B-v0.1"
 dataset_path = Config.DATA_SET_PATH
 output_dir = Config.MODEL_PATH
 logs_dir = Config.TRAINING_LOGS_PATH
