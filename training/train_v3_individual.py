@@ -48,7 +48,9 @@ def tokenize_function(examples):
     return tokenizer(
         examples["text"], 
         truncation=True, 
-        max_length=512) # add_spesial_tokens
+        max_length=1024,
+        add_special_tokens=True
+        )
 
 tokenized_dataset = dataset.map(
     tokenize_function,
@@ -89,7 +91,7 @@ model.resize_token_embeddings(len(tokenizer))
 training_args = TrainingArguments(
     output_dir=output_dir,
     per_device_train_batch_size=4,
-    gradient_accumulation_steps=8,
+    gradient_accumulation_steps=6,
     learning_rate=2e-5,
     num_train_epochs=3,
     logging_steps=10,
