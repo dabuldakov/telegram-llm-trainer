@@ -49,7 +49,7 @@ def tokenize_function(examples):
     return tokenizer(
         examples["text"], 
         truncation=True, 
-        max_length=1024,
+        max_length=512,
         add_special_tokens=True
         )
 
@@ -93,7 +93,7 @@ model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
 training_args = TrainingArguments(
     output_dir=output_dir,
     per_device_train_batch_size=4,
-    gradient_accumulation_steps=6,
+    gradient_accumulation_steps=8,
     learning_rate=2e-5,
     num_train_epochs=3,
     logging_steps=10,
