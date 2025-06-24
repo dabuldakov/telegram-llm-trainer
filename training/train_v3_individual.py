@@ -83,8 +83,9 @@ data_collator = DataCollatorForLanguageModeling(
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
     torch_dtype=torch.bfloat16,
-    device_map="auto"
-)
+    device_map=None
+).to("cuda")
+
 model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
 
 # Параметры обучения
@@ -103,8 +104,8 @@ training_args = TrainingArguments(
     remove_unused_columns=False,
     report_to="wandb",
     max_grad_norm=0.5,
-    warmup_ratio=0.05
-    #torch_compile=True
+    warmup_ratio=0.05,
+    torch_compile=True
 )
 
 trainer = Trainer(
