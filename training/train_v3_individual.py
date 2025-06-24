@@ -49,7 +49,7 @@ def tokenize_function(examples):
     return tokenizer(
         examples["text"], 
         truncation=True, 
-        max_length=512,
+        max_length=1024,
         add_special_tokens=True
         )
 
@@ -106,7 +106,7 @@ training_args = TrainingArguments(
     report_to="wandb",
     max_grad_norm=0.5,
     warmup_ratio=0.05,
-    torch_compile=True
+    #torch_compile=True
 )
 
 trainer = Trainer(
