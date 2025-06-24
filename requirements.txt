@@ -1,7 +1,7 @@
 transformers
 datasets
 accelerate
-torch
+torch=2.2.1
 peft
 fastapi
 pydantic
