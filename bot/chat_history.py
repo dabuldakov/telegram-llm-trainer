@@ -11,7 +11,7 @@ class ChatHistory:
         self.trim_history(chat_id)
 
     def trim_history(self, chat_id):     
-        if len(self.history[chat_id]) > self.max_history + 1:
+        if len(self.history[chat_id]) > self.max_history:
             self.history[chat_id] = self.history[chat_id][-self.max_history:]   
     
     def get_formatted_history(self, chat_id):
