@@ -85,7 +85,7 @@ model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.bfloat16,
     device_map="auto"
 )
-model.resize_token_embeddings(len(tokenizer))
+model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
 
 # Параметры обучения
 training_args = TrainingArguments(
