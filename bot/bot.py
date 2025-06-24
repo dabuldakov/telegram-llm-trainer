@@ -53,7 +53,8 @@ def handle_message(message):
             return
 
         if not message.from_user.is_bot:
-            history.add_message(chat_id, role_user, get_fio(message), user_message)
+            u_m = user_message.replace("@ochen_hueviy_bot", "").strip()
+            history.add_message(chat_id, role_user, get_fio(message), u_m)
         
         if "@ochen_hueviy_bot" not in user_message:
             return 
@@ -70,7 +71,7 @@ def handle_message(message):
         output = chat_model.generate(prompt)
 
         # Добавляем ответ в историю и отправляем
-        history.add_message(chat_id, role_assistant, imitator_name, output)
+        #history.add_message(chat_id, role_assistant, imitator_name, output)
         bot.reply_to(message, output)
         
     except Exception as e:
