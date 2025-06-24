@@ -181,6 +181,3 @@ def filter_by_author(input_json_path, output_json_path, author_name):
 
 # Пример использования
 process_chat_data("data/chat_history.json")
-
-# Пример использования:
-

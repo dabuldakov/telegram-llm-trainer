@@ -32,6 +32,7 @@ python3 prepare/prepare_data_individual.py
 2. Train dataset on LLM model
 
 python3 -m training.train
+python3 -m training.train_v3_individual
 
 3. Start Telegram bot
 
