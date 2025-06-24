@@ -6,8 +6,8 @@ class ChatHistory:
         self.history = defaultdict(list)
         self.max_history = getattr(Config, "MAX_CHAT_HISTORY", 10)
     
-    def add_message(self, chat_id, role, content):
-        self.history[chat_id].append({"role": role, "content": content})
+    def add_message(self, chat_id, role, name, content):
+        self.history[chat_id].append({"role": role, "name": name, "content": content})
         self.trim_history(chat_id)
 
     def trim_history(self, chat_id):     
@@ -17,5 +17,8 @@ class ChatHistory:
     def get_formatted_history(self, chat_id):
         prompt = ""
         for msg in self.history[chat_id]:
-            prompt += f"[USER:{msg['role']}] {msg['content']}\n"
+            role = msg['role']
+            name = msg['name']
+            content = msg['content']
+            prompt += f"<|{role}|>{name}|>{content}</|{role}|>\n"
         return prompt
