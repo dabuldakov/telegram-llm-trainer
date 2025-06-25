@@ -23,9 +23,12 @@ class ChatModel:
 
         output_ids = self.model.generate(
             **data,
-            max_new_tokens=512,
+            max_new_tokens=256,
             do_sample=True,
-            temperature=0.7
+            temperature=0.7,
+            top_p=0.9,        # 0.8-0.95 (nucleus sampling)
+            top_k=50,         # Ограничивает выбор топ-K токенов
+            repetition_penalty=1.2,  # Штраф за повторения (1.0-2.0)
         )[0]
 
         self.log_output_ids(output_ids, data)
