@@ -37,7 +37,7 @@ class ChatModel:
 
         output_ids = output_ids[len(data["input_ids"][0]):]
         output = self.tokenizer.decode(output_ids)
-        return output.strip()
+        return output.replace("</|assistant|>", "").strip()
     
     def log_output_ids(self, output_ids, data):
         output_ids = output_ids[len(data["input_ids"][0]):]

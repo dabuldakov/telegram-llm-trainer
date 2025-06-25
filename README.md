@@ -23,21 +23,21 @@ Application flow:
 
 1. Prepare dataset from telegram chat history logs
 
-python3 prepare/prepare_data.py
-python3 prepare/prepare_data_individual.py
+!python3 prepare/prepare_data.py
+!python3 prepare/prepare_data_individual.py
 
     1.1 For analyze data
 
-    python3 prepare/analyze_texts_json.py
+    !python3 prepare/analyze_texts_json.py
 
 2. Train dataset on LLM model
 
-python3 -m training.train
-python3 -m training.train_v3_individual
+!python3 -m training.train
+!python3 -m training.train_v3_individual
 
 3. Start Telegram bot
 
-python3 -m bot.bot
+!python3 -m bot.bot
 
 4. Looking for training on site
 wandb login
