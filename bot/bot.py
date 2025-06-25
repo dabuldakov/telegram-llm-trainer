@@ -36,7 +36,7 @@ def emperor_command(message):
     try:
         phrase = random.choice(warhammer_phrases)
         chat_id = message.chat.id
-        history.add_message(chat_id, role_assistant, bot_name, phrase)
+        history.add_message_answer(chat_id, role_user, bot_name, phrase)
         bot.send_message(chat_id, phrase)
     except Exception as e:
         bot.send_message(message, f"Ошибка при получении фразы: {str(e)}")  
@@ -52,30 +52,55 @@ def handle_message(message):
         if not hasattr(message, "chat") or getattr(message.chat, "title", None) not in allowed_titles:
             return
 
-        if not message.from_user.is_bot:
-            u_m = user_message.replace("@ochen_hueviy_bot", "").strip()
-            history.add_message(chat_id, role_user, get_fio(message), u_m)
+        if message.from_user.is_bot:
+            history.add_message_answer(chat_id, role_assistant, imitator_name, user_message)
+        else:
+            if "@ochen_hueviy_bot" not in user_message:
+                history.add_message(chat_id, role_user, get_fio(message), user_message)
         
+        # Если это reply-сообщение, то обрабатываем его отдельно
+        if handle_with_reply(message):
+            return
+
+        # Если не упомянули бота то просто слушаем
         if "@ochen_hueviy_bot" not in user_message:
             return 
-        
-        # Удаляем упоминание бота из текста
-        user_message = user_message.replace("@ochen_hueviy_bot", "").strip()
        
-        discusion = history.get_formatted_history(chat_id)
-        prompt = f"{discusion}\n<|assistant|>{imitator_name}|>"
-
-        loggin_promt(prompt)
-
-        # Генерируем ответ
-        output = chat_model.generate(prompt)
-
-        # Добавляем ответ в историю и отправляем
-        #history.add_message(chat_id, role_assistant, imitator_name, output)
-        bot.reply_to(message, output)
+        # Если упомянули бота, то обрабатываем ответ
+        handle_message(message)
         
     except Exception as e:
         bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")
+
+def handle_reply(message):
+    user_message = message.text
+    chat_id = message.chat.id
+    discusion = history.get_formatted_history(chat_id)
+    u_m = user_message.replace("@ochen_hueviy_bot", "").strip()
+    user_promt = f"<|user|>{get_fio(message)}|>{u_m}</|user|>\n"
+    prompt = f"{discusion}\n{user_promt}\n<|assistant|>{imitator_name}|>"
+
+    # Генерируем ответ
+    loggin_promt(prompt)
+    output = chat_model.generate(prompt)
+    bot.reply_to(message, output)
+
+def handle_with_reply(message):
+    chat_id = message.chat.id
+    if hasattr(message, "reply_to_message_id") and message.reply_to_message_id:
+        # Получаем сообщение из истории по reply_to_message_id
+        answer_msg = history.get_answer_message_by_id(chat_id, message.reply_to_message_id)
+        if answer_msg:
+            # Формируем контекст из найденного сообщения
+            context = history.get_formatted_answer_history(chat_id, message.reply_to_message_id)
+            user_message = message.text.replace("@ochen_hueviy_bot", "").strip()
+            prompt = f"{context}\n<|user|>{get_fio(message)}|>{user_message}</|user|>\n<|assistant|>{imitator_name}|>"
+
+            loggin_promt(prompt)
+            output = chat_model.generate(prompt)
+            bot.reply_to(message, output)
+            return True
+    return False     
 
 def get_fio(message):
     return f"{message.from_user.first_name} {message.from_user.last_name}"
