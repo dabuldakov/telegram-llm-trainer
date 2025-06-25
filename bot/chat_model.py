@@ -21,12 +21,13 @@ class ChatModel:
         inputs = self.tokenizer(promt, return_tensors="pt", add_special_tokens=True).to("cuda")
         data = {k: v.to(self.model.device) for k, v in inputs.items()}
 
+        assistant_token_id = self.tokenizer.encode("</|assistant|>")[-1]
         output_ids = self.model.generate(
             **data,
             max_new_tokens=256,
             do_sample=True,
             temperature=0.7,
-            eos_token_id=self.tokenizer.eos_token_id,
+            eos_token_id=assistant_token_id,
             top_p=0.9,        # 0.8-0.95 (nucleus sampling)
             top_k=50,         # Ограничивает выбор топ-K токенов
             repetition_penalty=1.2,  # Штраф за повторения (1.0-2.0)
