@@ -54,6 +54,7 @@ def handle_message(message):
 
         if message.from_user.is_bot:
             history.add_message_answer(chat_id, role_assistant, imitator_name, user_message)
+            history.add_message(chat_id, role_assistant, imitator_name, user_message)
         else:
             if "@ochen_hueviy_bot" not in user_message:
                 history.add_message(chat_id, role_user, get_fio(message), user_message)
@@ -87,12 +88,12 @@ def handle_reply(message):
 
 def handle_with_reply(message):
     chat_id = message.chat.id
-    if hasattr(message, "reply_to_message_id") and message.reply_to_message_id:
-        # Получаем сообщение из истории по reply_to_message_id
-        answer_msg = history.get_answer_message_by_id(chat_id, message.reply_to_message_id)
+    if hasattr(message, "reply_to_message") and message.reply_to_message:
+        # Получаем сообщение из истории по reply_to_message id
+        answer_msg = history.get_answer_message_by_id(chat_id, message.reply_to_message)
         if answer_msg:
             # Формируем контекст из найденного сообщения
-            context = history.get_formatted_answer_history(chat_id, message.reply_to_message_id)
+            context = history.get_formatted_answer_history(chat_id, message.reply_to_message)
             user_message = message.text.replace("@ochen_hueviy_bot", "").strip()
             prompt = f"{context}\n<|user|>{get_fio(message)}|>{user_message}</|user|>\n<|assistant|>{imitator_name}|>"
 
