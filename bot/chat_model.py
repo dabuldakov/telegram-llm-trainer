@@ -25,8 +25,7 @@ class ChatModel:
             **data,
             max_new_tokens=512,
             do_sample=True,
-            temperature=0.7,
-            skip_special_tokens=True
+            temperature=0.7
         )[0]
 
         self.log_output_ids(output_ids, data)
