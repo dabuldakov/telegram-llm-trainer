@@ -16,7 +16,7 @@ class Config:
     
     # Model
     MODEL_PATH = "outputs/fine_tuned_model"
-    MODEL_PATH_FINISHED_TRAIN = "outputs/v0/fine_tuned_model"
+    MODEL_PATH_FINISHED_TRAIN = "outputs/v_1_individual/fine_tuned_model"
     TRAINING_LOGS_PATH = "logs"
     MAX_HISTORY = 5  # Количество сообщений в контексте
     MAX_LENGTH = 500  # Максимальная длина ответа
