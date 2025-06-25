@@ -46,6 +46,7 @@ def handle_message(message):
     try:
         chat_id = message.chat.id
         user_message = message.text
+        reply_message_id = message.reply_to_message
 
         # Проверка на название чата
         allowed_titles = ["Группа хуюпа", "Хуйня"]
@@ -53,7 +54,7 @@ def handle_message(message):
             return
 
         if message.from_user.is_bot:
-            history.add_message_answer(chat_id, role_assistant, imitator_name, user_message)
+            history.add_message_answer(chat_id, role_assistant, imitator_name, user_message, reply_message_id)
             u_m = user_message.replace("@ochen_hueviy_bot", "").strip()
             history.add_message(chat_id, role_assistant, imitator_name, u_m)
         else:
@@ -76,7 +77,7 @@ def handle_message(message):
 
 def handle_reply(message):
     discusion = history.get_formatted_history(message.chat.id)
-    prompt = f"{discusion}\n<|assistant|>{imitator_name}|>"
+    prompt = f"{discusion}<|assistant|>{imitator_name}|>"
 
     # Генерируем ответ
     loggin_promt(prompt)
