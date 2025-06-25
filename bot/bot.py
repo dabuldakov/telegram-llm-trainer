@@ -67,7 +67,7 @@ def handle_message(message):
             return 
        
         # Если упомянули бота, то обрабатываем ответ
-        handle_message(message)
+        handle_reply(message)
         
     except Exception as e:
         bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")
