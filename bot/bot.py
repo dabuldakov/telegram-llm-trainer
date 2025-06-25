@@ -54,10 +54,11 @@ def handle_message(message):
 
         if message.from_user.is_bot:
             history.add_message_answer(chat_id, role_assistant, imitator_name, user_message)
-            history.add_message(chat_id, role_assistant, imitator_name, user_message)
+            u_m = user_message.replace("@ochen_hueviy_bot", "").strip()
+            history.add_message(chat_id, role_assistant, imitator_name, u_m)
         else:
-            if "@ochen_hueviy_bot" not in user_message:
-                history.add_message(chat_id, role_user, get_fio(message), user_message)
+            u_m = user_message.replace("@ochen_hueviy_bot", "").strip()
+            history.add_message(chat_id, role_user, get_fio(message), u_m)
         
         # Если это reply-сообщение, то обрабатываем его отдельно
         if handle_with_reply(message):
@@ -74,12 +75,8 @@ def handle_message(message):
         bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")
 
 def handle_reply(message):
-    user_message = message.text
-    chat_id = message.chat.id
-    discusion = history.get_formatted_history(chat_id)
-    u_m = user_message.replace("@ochen_hueviy_bot", "").strip()
-    user_promt = f"<|user|>{get_fio(message)}|>{u_m}</|user|>\n"
-    prompt = f"{discusion}\n{user_promt}\n<|assistant|>{imitator_name}|>"
+    discusion = history.get_formatted_history(message.chat.id)
+    prompt = f"{discusion}\n<|assistant|>{imitator_name}|>"
 
     # Генерируем ответ
     loggin_promt(prompt)
