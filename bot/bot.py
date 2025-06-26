@@ -46,7 +46,7 @@ def handle_message(message):
     try:
         chat_id = message.chat.id
         user_message = message.text
-        loggin_promt(message)
+        #loggin_promt(message)
 
         # Проверка на название чата
         allowed_titles = ["Группа хуюпа", "Хуйня"]
@@ -90,7 +90,7 @@ def handle_with_reply(message):
                 from_ = getattr(message.reply_to_message.json, "from")
                 if from_.is_bot and from_.username == 'ochen_hueviy_bot':    
                     # Получаем сообщение из истории по reply_to_message id
-                    answer_msg = message.text
+                    answer_msg = message.reply_to_message.json.text
                     if answer_msg:
                         # Формируем контекст из найденного сообщения
                         context = get_formatted_answer_history(role_assistant, imitator_name, answer_msg)
