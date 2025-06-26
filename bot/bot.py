@@ -85,29 +85,25 @@ def handle_reply(message):
 
 def handle_with_reply(message):
     chat_id = message.chat.id
-    loggin_promt(message)
     if hasattr(message, "reply_to_message") and message.reply_to_message:
-        loggin_promt(message.reply_to_message)
-        if hasattr(message.reply_to_message, "json") and message.reply_to_message.json:
-            loggin_promt(message.reply_to_message.json)
-            if hasattr(message.reply_to_message.json, "from"):
-                from_ = getattr(message.reply_to_message.json, "from")
-                loggin_promt(from_)
-                if from_.is_bot and from_.username == bot_special_name:    
-                    # Получаем сообщение из истории по reply_to_message id
-                    reply_to_msg = message.reply_to_message.json.text
-                    loggin_promt(reply_to_msg)
-                    if reply_to_msg:
-                        # Формируем контекст из найденного сообщения
-                        context = get_formatted_to_answer_context(role_assistant, imitator_name, reply_to_msg)
-                        user_message_answer = message.text.replace(f"@{bot_special_name}", "").strip()
-                        prompt = f"{context}\n<|user|>{get_fio(message)}|>{user_message_answer}</|user|>\n<|assistant|>{imitator_name}|>"
+        if hasattr(message.reply_to_message, "from_user") and  message.reply_to_message.from_user:
+            from_user = message.reply_to_message.from_user
+            loggin_promt(from_user)
+            if from_user.is_bot and from_user.username == bot_special_name:    
+                # Получаем сообщение из истории по reply_to_message id
+                reply_to_msg = message.reply_to_message.text
+                loggin_promt(reply_to_msg)
+                if reply_to_msg:
+                    # Формируем контекст из найденного сообщения
+                    context = get_formatted_to_answer_context(role_assistant, imitator_name, reply_to_msg)
+                    user_message_answer = message.text.replace(f"@{bot_special_name}", "").strip()
+                    prompt = f"{context}\n<|user|>{get_fio(message)}|>{user_message_answer}</|user|>\n<|assistant|>{imitator_name}|>"
 
-                        loggin_promt(prompt)
-                        output = chat_model.generate(prompt)
-                        history.add_message(chat_id, role_assistant, imitator_name, output)
-                        bot.reply_to(message, output)
-                        return True
+                    loggin_promt(prompt)
+                    output = chat_model.generate(prompt)
+                    history.add_message(chat_id, role_assistant, imitator_name, output)
+                    bot.reply_to(message, output)
+                    return True
     return False     
 
 def get_fio(message):
