@@ -85,8 +85,11 @@ def handle_reply(message):
 
 def handle_with_reply(message):
     chat_id = message.chat.id
+    loggin_promt(message)
     if hasattr(message, "reply_to_message") and message.reply_to_message:
+        loggin_promt(message.reply_to_message)
         if hasattr(message.reply_to_message, "json") and message.reply_to_message.json:
+            loggin_promt(message.reply_to_message.json)
             if hasattr(message.reply_to_message.json, "from"):
                 from_ = getattr(message.reply_to_message.json, "from")
                 loggin_promt(from_)
