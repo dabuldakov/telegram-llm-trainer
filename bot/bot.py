@@ -36,7 +36,7 @@ def emperor_command(message):
     try:
         phrase = random.choice(warhammer_phrases)
         chat_id = message.chat.id
-        history.add_message_answer(chat_id, role_user, bot_name, phrase)
+        history.add_message(chat_id, role_user, bot_name, phrase)
         bot.send_message(chat_id, phrase)
     except Exception as e:
         bot.send_message(message, f"Ошибка при получении фразы: {str(e)}")  
@@ -46,22 +46,15 @@ def handle_message(message):
     try:
         chat_id = message.chat.id
         user_message = message.text
-        reply_message_id = message.reply_to_message
-        is_bot = message.from_user.is_bot
         loggin_promt(message)
 
         # Проверка на название чата
         allowed_titles = ["Группа хуюпа", "Хуйня"]
         if not hasattr(message, "chat") or getattr(message.chat, "title", None) not in allowed_titles:
             return
-
-        if is_bot:
-            history.add_message_answer(chat_id, role_assistant, imitator_name, user_message, reply_message_id)
-            u_m = user_message.replace("@ochen_hueviy_bot", "").strip()
-            history.add_message(chat_id, role_assistant, imitator_name, u_m)
-        else:
-            u_m = user_message.replace("@ochen_hueviy_bot", "").strip()
-            history.add_message(chat_id, role_user, get_fio(message), u_m)
+        
+        u_m = user_message.replace("@ochen_hueviy_bot", "").strip()
+        history.add_message(chat_id, role_user, get_fio(message), u_m)
         
         # Если это reply-сообщение, то обрабатываем его отдельно
         if handle_with_reply(message):
@@ -78,37 +71,48 @@ def handle_message(message):
         bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")
 
 def handle_reply(message):
+    chat_id = message.chat.id
+
     discusion = history.get_formatted_history(message.chat.id)
     prompt = f"{discusion}<|assistant|>{imitator_name}|>"
 
     # Генерируем ответ
     loggin_promt(prompt)
     output = chat_model.generate(prompt)
+    history.add_message(chat_id, role_assistant, imitator_name, output)
     bot.reply_to(message, output)
 
 def handle_with_reply(message):
     chat_id = message.chat.id
     if hasattr(message, "reply_to_message") and message.reply_to_message:
-        # Получаем сообщение из истории по reply_to_message id
-        answer_msg = history.get_answer_message_by_id(chat_id, message.reply_to_message)
-        if answer_msg:
-            # Формируем контекст из найденного сообщения
-            context = history.get_formatted_answer_history(chat_id, message.reply_to_message)
-            user_message = message.text.replace("@ochen_hueviy_bot", "").strip()
-            prompt = f"{context}\n<|user|>{get_fio(message)}|>{user_message}</|user|>\n<|assistant|>{imitator_name}|>"
+        if hasattr(message.reply_to_message, "json") and message.reply_to_message.json:
+            if hasattr(message.reply_to_message.json, "from"):
+                from_ = getattr(message.reply_to_message.json, "from")
+                if from_.is_bot and from_.username == 'ochen_hueviy_bot':    
+                    # Получаем сообщение из истории по reply_to_message id
+                    answer_msg = message.text
+                    if answer_msg:
+                        # Формируем контекст из найденного сообщения
+                        context = get_formatted_answer_history(role_assistant, imitator_name, answer_msg)
+                        user_message = message.text.replace("@ochen_hueviy_bot", "").strip()
+                        prompt = f"{context}\n<|user|>{get_fio(message)}|>{user_message}</|user|>\n<|assistant|>{imitator_name}|>"
 
-            loggin_promt(prompt)
-            output = chat_model.generate(prompt)
-            bot.reply_to(message, output)
-            return True
+                        loggin_promt(prompt)
+                        output = chat_model.generate(prompt)
+                        history.add_message(chat_id, role_assistant, imitator_name, output)
+                        bot.reply_to(message, output)
+                        return True
     return False     
 
 def get_fio(message):
     return f"{message.from_user.first_name} {message.from_user.last_name}"
 
+def get_formatted_answer_history(role, name, content):
+    return f"<|{role}|>{name}|>{content}</|{role}|>\n"
+
 def loggin_promt(prompt):
     with open(f"{logs_dir}/prompts.log", "a", encoding="utf-8") as f:
-        f.write(f"{datetime.datetime.now().isoformat()} | {prompt}\n{'-'*40}\n")       
+        f.write(f"{datetime.datetime.now().isoformat()}\n{prompt}\n{'-'*40}\n")       
 
 if __name__ == "__main__":
     print("Бот запущен...")

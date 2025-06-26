@@ -41,13 +41,3 @@ class ChatHistory:
             content = msg['content']
             prompt += f"<|{role}|>{name}|>{content}</|{role}|>\n"
         return prompt
-    
-    def get_formatted_answer_history(self, chat_id, message_id):
-        prompt = ""
-        for msg in self.history_answers[chat_id]:
-            if msg.get("message_id") == message_id:
-                role = msg['role']
-                name = msg['name']
-                content = msg['content']
-                prompt = f"<|{role}|>{name}|>{content}</|{role}|>\n"
-        return prompt
