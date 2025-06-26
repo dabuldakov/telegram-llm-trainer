@@ -14,6 +14,7 @@ role_assistant = "assistant"
 role_user = "user"
 imitator_name = "Timur Mukhtarov"
 logs_dir = Config.TRAINING_LOGS_PATH
+bot_special_name = 'ochen_hueviy_bot'
 
 # Загружаем фразы один раз при старте
 with open("bot/warhammer_frazes.txt", encoding="utf-8") as f:
@@ -88,14 +89,14 @@ def handle_with_reply(message):
         if hasattr(message.reply_to_message, "json") and message.reply_to_message.json:
             if hasattr(message.reply_to_message.json, "from"):
                 from_ = getattr(message.reply_to_message.json, "from")
-                if from_.is_bot and from_.username == 'ochen_hueviy_bot':    
+                if from_.is_bot and from_.username == bot_special_name:    
                     # Получаем сообщение из истории по reply_to_message id
-                    answer_msg = message.reply_to_message.json.text
-                    if answer_msg:
+                    reply_to_msg = message.reply_to_message.json.text
+                    if reply_to_msg:
                         # Формируем контекст из найденного сообщения
-                        context = get_formatted_answer_history(role_assistant, imitator_name, answer_msg)
-                        user_message = message.text.replace("@ochen_hueviy_bot", "").strip()
-                        prompt = f"{context}\n<|user|>{get_fio(message)}|>{user_message}</|user|>\n<|assistant|>{imitator_name}|>"
+                        context = get_formatted_to_answer_context(role_assistant, imitator_name, reply_to_msg)
+                        user_message_answer = message.text.replace(f"@{bot_special_name}", "").strip()
+                        prompt = f"{context}\n<|user|>{get_fio(message)}|>{user_message_answer}</|user|>\n<|assistant|>{imitator_name}|>"
 
                         loggin_promt(prompt)
                         output = chat_model.generate(prompt)
@@ -107,7 +108,7 @@ def handle_with_reply(message):
 def get_fio(message):
     return f"{message.from_user.first_name} {message.from_user.last_name}"
 
-def get_formatted_answer_history(role, name, content):
+def get_formatted_to_answer_context(role, name, content):
     return f"<|{role}|>{name}|>{content}</|{role}|>\n"
 
 def loggin_promt(prompt):
