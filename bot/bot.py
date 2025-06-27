@@ -88,11 +88,9 @@ def handle_with_reply(message):
     if hasattr(message, "reply_to_message") and message.reply_to_message:
         if hasattr(message.reply_to_message, "from_user") and  message.reply_to_message.from_user:
             from_user = message.reply_to_message.from_user
-            loggin_promt(from_user)
             if from_user.is_bot and from_user.username == bot_special_name:    
                 # Получаем сообщение из истории по reply_to_message id
                 reply_to_msg = message.reply_to_message.text
-                loggin_promt(reply_to_msg)
                 if reply_to_msg:
                     # Формируем контекст из найденного сообщения
                     context = get_formatted_to_answer_context(role_assistant, imitator_name, reply_to_msg)
