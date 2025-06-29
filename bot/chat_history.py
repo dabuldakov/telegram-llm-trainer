@@ -48,8 +48,7 @@ class ChatHistory:
                 except Exception:
                     continue
                 if msg_dt >= one_day_ago:
-                    role = msg['role']
                     name = msg['name']
                     content = msg['content']
-                    prompt += f"<|{role}|>{name}|>{content}</|{role}|>\n"
+                    prompt += f"{name}: {content}\n"
         return prompt
