@@ -4,6 +4,7 @@ import random
 from bot.chat_model import ChatModel
 from config import Config
 from bot.chat_history import ChatHistory
+from telebot.types import BotCommand
 
 # Инициализация
 bot = telebot.TeleBot(Config.TELEGRAM_BOT_TOKEN)
@@ -15,6 +16,7 @@ role_user = "user"
 imitator_name = "Timur Mukhtarov"
 logs_dir = Config.TRAINING_LOGS_PATH
 bot_special_name = 'ochen_hueviy_bot'
+summury_default_message = 'Ты — аналитик текста. Разбери этот отрывок диалога и выдели ключевые идеи:'
 
 # Загружаем фразы один раз при старте
 with open("bot/warhammer_frazes.txt", encoding="utf-8") as f:
@@ -40,7 +42,14 @@ def emperor_command(message):
         history.add_message(chat_id, role_user, bot_name, phrase)
         bot.send_message(chat_id, phrase)
     except Exception as e:
-        bot.send_message(message, f"Ошибка при получении фразы: {str(e)}")  
+        bot.send_message(message, f"Ooops, error when fraze get... {str(e)}")  
+
+@bot.message_handler(commands=['summury'])
+def summury_command(message):
+    try:
+        handle_summury(message)
+    except Exception as e:
+        bot.send_message(message, f"Oops, error when try summury... : {str(e)}")          
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
@@ -66,15 +75,26 @@ def handle_message(message):
             return 
        
         # Если упомянули бота, то обрабатываем ответ
-        handle_reply(message)
+        handle_mention(message)
         
     except Exception as e:
-        bot.reply_to(message, f"Ой произошла ошибка: {str(e)}")
+        bot.reply_to(message, f"Oops, error when handle message... {str(e)}")
 
-def handle_reply(message):
+def handle_summury(message):
     chat_id = message.chat.id
 
-    discusion = history.get_formatted_history(message.chat.id)
+    discusion = history.get_formatted_history_last_day(chat_id)
+    prompt = f"{summury_default_message}\n{discusion}"
+
+    # Генерируем ответ
+    loggin_promt(prompt)
+    output = chat_model.generate(prompt)
+    bot.reply_to(message, output)            
+
+def handle_mention(message):
+    chat_id = message.chat.id
+
+    discusion = history.get_formatted_history(chat_id)
     prompt = f"{discusion}<|assistant|>{imitator_name}|>"
 
     # Генерируем ответ
@@ -112,8 +132,20 @@ def get_formatted_to_answer_context(role, name, content):
 
 def loggin_promt(prompt):
     with open(f"{logs_dir}/prompts.log", "a", encoding="utf-8") as f:
-        f.write(f"{datetime.datetime.now().isoformat()}\n{prompt}\n{'-'*40}\n")       
+        f.write(f"{datetime.datetime.now().isoformat()}\n{prompt}\n{'-'*40}\n")      
+
+def set_commands(bot):
+    commands = [
+        BotCommand("/start", "Say hello"),
+        BotCommand("/help", "Get help"),
+        BotCommand("/echo", "Echo"),
+        BotCommand("/emperor", "Gain strength in moments of weakness"),
+        BotCommand("/summury", "Summurize all messages for last day"),
+        BotCommand("/ip", "Get your IP")
+    ]
+    bot.set_my_commands(commands)         
 
 if __name__ == "__main__":
     print("Бот запущен...")
+    set_commands(bot)
     bot.polling()

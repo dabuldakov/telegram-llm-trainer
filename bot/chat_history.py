@@ -1,31 +1,24 @@
 from collections import defaultdict
+import datetime
 from config import Config
 
 max_chat_history = Config.MAX_CHAT_HISTORY
-max_chat_history_answers = Config.MAX_CHAT_HISTORY_ANSWERS
 
 class ChatHistory:
     def __init__(self):
         self.history = defaultdict(list)
-        self.history_answers = defaultdict(list)
+        self.history_full = defaultdict(list)
         self.max_history = max_chat_history
-        self.max_history_answers = max_chat_history_answers
     
     def add_message(self, chat_id, role, name, content):
         self.history[chat_id].append({"role": role, "name": name, "content": content})
+        self.history_full[chat_id].append({"role": role, "name": name, "content": content, 
+                                           "date": datetime.datetime.now().isoformat()})
         self.trim_history(chat_id)
-
-    def add_message_answer(self, chat_id, role, name, content, message_id):
-        self.history_answers[chat_id].append({"role": role, "name": name, "content": content, "message_id": message_id})
-        self.trim_history_answers(chat_id)
 
     def trim_history(self, chat_id):     
         if len(self.history[chat_id]) > self.max_history:
-            self.history[chat_id] = self.history[chat_id][-self.max_history:]   
-
-    def trim_history_answers(self, chat_id):     
-        if len(self.history_answers[chat_id]) > self.max_history_answers:
-            self.history_answers[chat_id] = self.history_answers[chat_id][-self.max_history_answers:]           
+            self.history[chat_id] = self.history[chat_id][-self.max_history:]      
     
     def get_answer_message_by_id(self, chat_id, message_id):
         for msg in self.history_answers[chat_id]:
@@ -40,4 +33,23 @@ class ChatHistory:
             name = msg['name']
             content = msg['content']
             prompt += f"<|{role}|>{name}|>{content}</|{role}|>\n"
+        return prompt
+    
+    def get_formatted_history_last_day(self, chat_id):
+        prompt = ""
+        now = datetime.datetime.now()
+        one_day_ago = now - datetime.timedelta(days=1)
+        for msg in self.history_full[chat_id]:
+            # Парсим дату сообщения
+            msg_date = msg.get("date")
+            if msg_date:
+                try:
+                    msg_dt = datetime.datetime.fromisoformat(msg_date)
+                except Exception:
+                    continue
+                if msg_dt >= one_day_ago:
+                    role = msg['role']
+                    name = msg['name']
+                    content = msg['content']
+                    prompt += f"<|{role}|>{name}|>{content}</|{role}|>\n"
         return prompt
