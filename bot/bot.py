@@ -84,7 +84,7 @@ def handle_summury(message):
     chat_id = message.chat.id
 
     discusion = history.get_formatted_history_last_day(chat_id)
-    prompt = f"{summury_default_message}\n'{discusion}'"
+    prompt = f"{summury_default_message}\n\"{discusion}\""
 
     # Генерируем ответ
     loggin_promt(prompt)
