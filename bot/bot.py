@@ -131,8 +131,15 @@ def get_formatted_to_answer_context(role, name, content):
     return f"<|{role}|>{name}|>{content}</|{role}|>\n"
 
 def loggin_promt(prompt):
-    with open(f"{logs_dir}/prompts.log", "a", encoding="utf-8") as f:
-        f.write(f"{datetime.datetime.now().isoformat()}\n{prompt}\n{'-'*40}\n")      
+    log_path = f"{logs_dir}/prompts.log"
+    log_entry = f"{datetime.datetime.now().isoformat()}\n{prompt}\n{'-'*40}\n"
+    try:
+        with open(log_path, "r", encoding="utf-8") as f:
+            old = f.read()
+    except FileNotFoundError:
+        old = ""
+    with open(log_path, "w", encoding="utf-8") as f:
+        f.write(log_entry + old) 
 
 def set_commands(bot):
     commands = [
