@@ -47,7 +47,7 @@ class ChatModel:
         data = {k: v.to(self.model.device) for k, v in data.items()}
         output_ids = self.model.generate(
             **data,
-            generation_config=self.generation_config
+            generation_config=generation_config
         )[0]
         output_ids = output_ids[len(data["input_ids"][0]):]
         output = self.tokenizer.decode(output_ids, skip_special_tokens=True)
