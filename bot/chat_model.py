@@ -39,6 +39,17 @@ class ChatModel:
         output = self.tokenizer.decode(output_ids)
         return output.replace("</|assistant|>", "").strip()
     
+    def generate_summury(self, prompt):
+        data = self.tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
+        data = {k: v.to(self.model.device) for k, v in data.items()}
+        output_ids = self.model.generate(
+            **data,
+            generation_config=self.generation_config
+        )[0]
+        output_ids = output_ids[len(data["input_ids"][0]):]
+        output = self.tokenizer.decode(output_ids, skip_special_tokens=True)
+        return output.strip()
+    
     def log_output_ids(self, output_ids, data):
         output_ids = output_ids[len(data["input_ids"][0]):]
         decoded_text = self.tokenizer.decode(output_ids)

@@ -16,7 +16,7 @@ role_user = "user"
 imitator_name = "Timur Mukhtarov"
 logs_dir = Config.TRAINING_LOGS_PATH
 bot_special_name = 'ochen_hueviy_bot'
-summury_default_message = 'Ты — аналитик текста. Разбери этот отрывок диалога и выдели ключевые идеи:'
+summury_default_message = 'Ты — аналитик текста. Разбери этот диалог и выдели ключевые идеи. Расскажи что сам думаешь об этом:'
 
 # Загружаем фразы один раз при старте
 with open("bot/warhammer_frazes.txt", encoding="utf-8") as f:
@@ -88,7 +88,7 @@ def handle_summury(message):
 
     # Генерируем ответ
     loggin_promt(prompt)
-    output = chat_model.generate(prompt)
+    output = chat_model.generate_summury(prompt)
     bot.reply_to(message, output)            
 
 def handle_mention(message):
