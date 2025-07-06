@@ -1,13 +1,16 @@
 from transformers import (
     AutoModelForCausalLM,
-    AutoTokenizer
+    AutoTokenizer,
+    GenerationConfig
 )
 import torch
 import datetime
 from config import Config
 
+model_name = "mistralai/Mistral-7B-v0.1"
 model_path = Config.MODEL_PATH_FINISHED_TRAIN
 logs_dir = Config.TRAINING_LOGS_PATH
+generation_config = GenerationConfig.from_pretrained(model_name)
 
 class ChatModel:
     def __init__(self):
