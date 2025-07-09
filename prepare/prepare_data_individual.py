@@ -1,10 +1,11 @@
 from datasets import Dataset
 import json
-import os
+from config import Config
 
-data_save_path = "chat_history_prepared.json"
-text_data_for_llm_save_path = "text_data_for_llm.txt"
-output_dir = "data"
+text_json_path = Config.CHAT_HISTORY_PREPARED_PATH
+text_data_for_llm_save_path = Config.TEXT_DATA_FOR_LLM_SAVE_PATH
+data_set_path = Config.DATA_SET_PATH
+user_names_path = Config.DATA_USER_NAMES
 
 def process_chat_data(input_file):
     with open(input_file) as f:
@@ -23,13 +24,14 @@ def process_chat_data(input_file):
 
     # Создаем и сохраняем датасет
     dataset = Dataset.from_dict({"text": formatted_texts})
-    dataset.save_to_disk(f"{output_dir}/processed_dataset")
+    dataset.save_to_disk(data_set_path)
 
 
 def build_context_reply_dataset(chat_json):
     # Индексируем сообщения по id для быстрого доступа
     id_to_msg = {msg["id"]: msg for msg in chat_json["messages"] if msg.get("type") == "message"}
     dataset = []
+    dataset_names = set()
 
     for msg in chat_json["messages"]:
         if (
@@ -49,6 +51,7 @@ def build_context_reply_dataset(chat_json):
                 if has_link(prev_text):  # Исключаем из контекста сообщения с ссылкой
                     break
                 author = prev_msg.get("from", "Unknown")
+                dataset_names.add(author)  # Добавляем автора target-сообщения
                 if isinstance(prev_text, list):
                     prev_text = "".join([t["text"] if isinstance(t, dict) and "text" in t else str(t) for t in prev_text])
                 context_msgs.append(f"{author}: {prev_text}")
@@ -64,11 +67,17 @@ def build_context_reply_dataset(chat_json):
             if isinstance(target, list):
                 target = "".join([t["text"] if isinstance(t, dict) and "text" in t else str(t) for t in target])
             author = msg.get("from", "Unknown")
+            dataset_names.add(author)  # Добавляем автора target-сообщения
             dataset.append({
                 "context": context,
                 "target": target,
                 "author": author
             })
+
+    clean_names = [name for name in dataset_names if name is not None]
+    with open(user_names_path, "w", encoding="utf-8") as f:
+        for name in sorted(clean_names):
+            f.write(name + "\n")
     return dataset
 
 def has_link(text):
@@ -151,14 +160,12 @@ def format_example_for_llm(example):
     return "".join(formatted)     
 
 def save_text_data_for_llm(formatted_texts):
-    texts_file_path = os.path.join(output_dir, text_data_for_llm_save_path)
-    with open(texts_file_path, "w", encoding="utf-8") as f:
+    with open(text_data_for_llm_save_path, "w", encoding="utf-8") as f:
         for text in formatted_texts:
             f.write(text + "\n")  
 
 def save_json_with_context(json_with_context):
-    texts_json_path = os.path.join(output_dir, data_save_path)
-    with open(texts_json_path, "w", encoding="utf-8") as f:
+    with open(text_json_path, "w", encoding="utf-8") as f:
         json.dump(json_with_context, f, ensure_ascii=False, indent=2)            
 
 def filter_by_author(input_json_path, output_json_path, author_name):

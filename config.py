@@ -10,6 +10,10 @@ class Config:
     #statistics wandb
     WANDB_TOKEN= os.environ['WANDB_TOKEN']
 
+    #Prepare chat history to dataset
+    CHAT_HISTORY_PREPARED_PATH = "data/chat_history_prepared.json"
+    TEXT_DATA_FOR_LLM_SAVE_PATH = "data/text_data_for_llm.txt"
+
     #Dataset from chat history
     DATA_SET_PATH = "data/processed_dataset"
     DATA_USER_NAMES = "data/names.txt"

@@ -23,7 +23,7 @@ Application flow:
 
 1. Prepare dataset from telegram chat history logs
 
-!python3 prepare/prepare_data_individual.py
+!python3 -m prepare.prepare_data_individual
 
     1.1 For analyze data
 
