@@ -96,4 +96,3 @@ def statistic(texts):
 
 # Пример использования:
 analyze_texts_json("data/chat_history_prepared.json")
-analyze_texts_json("data/chat_history_prepared_Timur Mukhtarov.json")

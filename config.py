@@ -12,7 +12,7 @@ class Config:
 
     #Dataset from chat history
     DATA_SET_PATH = "data/processed_dataset"
-    DATA_USER_NAMES = "data/user.txt"
+    DATA_USER_NAMES = "data/names.txt"
     
     # Model
     MODEL_PATH = "outputs/fine_tuned_model"

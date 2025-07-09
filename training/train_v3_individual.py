@@ -35,13 +35,14 @@ tokenizer.add_special_tokens({
     "additional_special_tokens": ["<|user|>", "</|user|>", "|>", "<|assistant|>", "</|assistant|>"]
 })
 
-sample = "<|user|>Дмитрий Булдаков|>Да у нас нет долов</|user|>"
-print(tokenizer.tokenize(sample))
 
 if os.path.exists(user_names_dir):
     with open(user_names_dir, "r", encoding="utf-8") as f:
         user_tokens = [line.strip() for line in f if line.strip()]
     tokenizer.add_tokens(user_tokens)
+
+sample = "<|user|>Дмитрий Булдаков|>Да у нас нет долгов</|user|>"
+print(tokenizer.tokenize(sample))
     
 
 # Токенизация данных

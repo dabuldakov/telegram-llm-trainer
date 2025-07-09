@@ -3,9 +3,7 @@ import json
 import os
 
 data_save_path = "chat_history_prepared.json"
-data_save_path_individual = "chat_history_prepared_Timur Mukhtarov.json"
 text_data_for_llm_save_path = "text_data_for_llm.txt"
-individual_name = "Timur Mukhtarov"
 output_dir = "data"
 
 def process_chat_data(input_file):
@@ -16,13 +14,8 @@ def process_chat_data(input_file):
 
     save_json_with_context(json_with_context)
 
-    json_with_context_individual = filter_by_author(
-                                                    f"{output_dir}/{data_save_path}", 
-                                                    f"{output_dir}/{data_save_path_individual}", 
-                                                    individual_name)    
-
     # Форматируем тексты для подачи в ЛЛМ
-    formatted_texts = [format_example_for_llm(example) for example in json_with_context_individual]
+    formatted_texts = [format_example_for_llm(example) for example in json_with_context]
 
     save_text_data_for_llm(formatted_texts)
 
