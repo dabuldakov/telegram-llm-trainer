@@ -149,7 +149,8 @@ def set_commands(bot):
         BotCommand("/help", "Get help"),
         BotCommand("/echo", "Echo"),
         BotCommand("/emperor", "Gain strength in moments of weakness"),
-        BotCommand("/summury", "Summurize all messages for last day")
+        BotCommand("/summury", "Summurize all messages for last day"),
+        BotCommand("/imitator", "Set random imitator name")
     ]
     bot.set_my_commands(commands)     
 
