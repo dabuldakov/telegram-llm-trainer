@@ -106,7 +106,7 @@ def handle_mention(message):
     loggin_promt(prompt)
     output = chat_model.generate(prompt)
     history.add_message(chat_id, role_assistant, imitator_name, output)
-    bot.reply_to(message, output)
+    bot.reply_to(message, f"{output} ({imitator_name})")
 
 def handle_with_reply(message):
     chat_id = message.chat.id
@@ -126,7 +126,7 @@ def handle_with_reply(message):
                     loggin_promt(prompt)
                     output = chat_model.generate(prompt)
                     history.add_message(chat_id, role_assistant, imitator_name, output)
-                    bot.reply_to(message, output)
+                    bot.reply_to(message, f"{output} ({imitator_name})")
                     return True
     return False     
 
