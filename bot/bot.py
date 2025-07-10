@@ -41,7 +41,7 @@ def echo_command(message):
 
 @bot.message_handler(commands=['imitator'])
 def echo_command(message):
-    imitator_name = get_random_imitator_name
+    set_random_imitator_name
     bot.send_message(message.chat.id, f"установлен ассистент: {imitator_name}")         
 
 @bot.message_handler(commands=['emperor'])
@@ -154,8 +154,9 @@ def set_commands(bot):
     ]
     bot.set_my_commands(commands)     
 
-def get_random_imitator_name():
-    return random.choice(imitator_names) if imitator_names else "Ассистент"
+def set_random_imitator_name():
+    global imitator_name
+    imitator_name = random.choice(imitator_names) if imitator_names else "Ассистент"
 
 if __name__ == "__main__":
     print("Бот запущен...")
