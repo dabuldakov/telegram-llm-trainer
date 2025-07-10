@@ -17,6 +17,7 @@ logs_dir = Config.TRAINING_LOGS_PATH
 user_names_path = Config.DATA_USER_NAMES
 bot_special_name = 'ochen_hueviy_bot'
 summury_default_message = 'Ты — аналитик текста. Разбери этот диалог и выдели ключевые идеи. Расскажи что сам думаешь об этом.'
+imitator_name = "Assistant"
 
 # Загружаем список имён для имитации
 with open(user_names_path, encoding="utf-8") as f:
@@ -36,7 +37,12 @@ def help_command(message):
 
 @bot.message_handler(commands=['echo'])
 def echo_command(message):
-    bot.send_message(message.chat.id, "Эхо ебать!")    
+    bot.send_message(message.chat.id, "Эхо ебать!") 
+
+@bot.message_handler(commands=['imitator'])
+def echo_command(message):
+    imitator_name = get_random_imitator_name
+    bot.send_message(message.chat.id, f"установлен ассистент: {imitator_name}")         
 
 @bot.message_handler(commands=['emperor'])
 def emperor_command(message):
@@ -97,8 +103,6 @@ def handle_summury(message):
 
 def handle_mention(message):
     chat_id = message.chat.id
-
-    imitator_name = get_random_imitator_name()
     discusion = history.get_formatted_history(chat_id)
     prompt = f"{discusion}<|assistant|>{imitator_name}|>"
 
@@ -118,7 +122,6 @@ def handle_with_reply(message):
                 reply_to_msg = message.reply_to_message.text
                 if reply_to_msg:
                     # Формируем контекст из найденного сообщения
-                    imitator_name = get_random_imitator_name()
                     context = get_formatted_to_answer_context(role_assistant, imitator_name, reply_to_msg)
                     user_message_answer = message.text.replace(f"@{bot_special_name}", "").strip()
                     prompt = f"{context}\n<|user|>{get_fio(message)}|>{user_message_answer}</|user|>\n<|assistant|>{imitator_name}|>"
