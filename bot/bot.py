@@ -41,7 +41,7 @@ def echo_command(message):
 
 @bot.message_handler(commands=['imitator'])
 def echo_command(message):
-    set_random_imitator_name
+    set_random_imitator_name()
     bot.send_message(message.chat.id, f"установлен ассистент: {imitator_name}")         
 
 @bot.message_handler(commands=['emperor'])
