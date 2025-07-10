@@ -23,6 +23,12 @@ imitator_name = "Assistant"
 with open(user_names_path, encoding="utf-8") as f:
     imitator_names = [line.strip() for line in f if line.strip()]
 
+def set_random_imitator_name():
+    global imitator_name
+    imitator_name = random.choice(imitator_names) if imitator_names else "Ассистент"
+    
+set_random_imitator_name()    
+
 # Загружаем фразы один раз при старте
 with open("bot/warhammer_frazes.txt", encoding="utf-8") as f:
     warhammer_phrases = [line.strip() for line in f if line.strip()]
@@ -152,11 +158,7 @@ def set_commands(bot):
         BotCommand("/summury", "Summurize all messages for last day"),
         BotCommand("/imitator", "Set random imitator name")
     ]
-    bot.set_my_commands(commands)     
-
-def set_random_imitator_name():
-    global imitator_name
-    imitator_name = random.choice(imitator_names) if imitator_names else "Ассистент"
+    bot.set_my_commands(commands)
 
 if __name__ == "__main__":
     print("Бот запущен...")
