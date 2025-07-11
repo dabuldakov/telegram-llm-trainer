@@ -197,3 +197,4 @@ cython_debug/
 data/
 .DS_Store
 prompts.log
+.vscode/

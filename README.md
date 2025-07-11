@@ -6,6 +6,7 @@ brew install python3
 git clone https://github.com/dabuldakov/telegram-llm-trainer.git
 pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu126
 pip install -r requirements.txt
+pip install keybert scikit-learn pandas numpy
 
 create file .env with tokens or add secrets on platform like https://datasphere.yandex.cloud/
 
@@ -24,6 +25,7 @@ Application flow:
 1. Prepare dataset from telegram chat history logs
 
 !python3 -m prepare.prepare_data_individual
+!python3 -m prepare.prepare_data_segmentation
 
     1.1 For analyze data
 
