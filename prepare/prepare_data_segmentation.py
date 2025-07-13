@@ -159,7 +159,7 @@ class ChatProcessor:
                 context_window=50)
             
             # 3. Topic analysis
-            clusters, topic_keywords = topic_analizer.analyze_topics(sessions, n_topics=10)
+            clusters, topic_keywords = topic_analizer.analyze_topics(sessions, n_topics=5)
             
             # 4. Format for LLM
             llm_dataset = self.format_for_llm(sessions, clusters, topic_keywords)
