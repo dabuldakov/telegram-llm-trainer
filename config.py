@@ -14,6 +14,7 @@ class Config:
     CHAT_HISTORY_PATH = "data/chat_history.json"
     CHAT_HISTORY_PREPARED_PATH = "data/chat_history_prepared.json"
     TEXT_DATA_FOR_LLM_SAVE_PATH = "data/text_data_for_llm.txt"
+    TEXT_DATA_FOR_LLM_SAVE_PATH_JSONL = "data/text_data_for_llm..jsonl"
 
     #Dataset from chat history
     DATA_SET_PATH = "data/processed_dataset"

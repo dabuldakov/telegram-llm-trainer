@@ -12,3 +12,5 @@ bitsandbytes
 transformers[sentencepiece]
 wandb
 flash-attn
+pymorphy2
+stop-words

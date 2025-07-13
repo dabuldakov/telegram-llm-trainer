@@ -1,15 +1,15 @@
 import json
 from datetime import datetime
-from typing import List, Dict, Tuple, Any
+from typing import List, Dict, Any
 import re
 from pathlib import Path
 
 from datasets import Dataset
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import KMeans
 from keybert import KeyBERT
 from tqdm import tqdm
 from config import Config
+from analize.analize import statistic
+from prepare.topic_analizer import TopicAnalyzer
 
 class ChatProcessor:
     def __init__(self):
@@ -122,45 +122,6 @@ class ChatProcessor:
         similarity = len(keywords_session & keywords_new) / max(1, len(keywords_session | keywords_new))
         return similarity >= similarity_threshold
     
-    def analyze_topics(self, 
-                      sessions: List[List[Dict[str, Any]]], 
-                      n_topics: int = 8) -> Tuple[List[int], Dict[int, List[str]]]:
-        """Perform topic modeling on message sessions.
-        
-        Args:
-            sessions: List of message sessions
-            n_topics: Number of topics to cluster
-            
-        Returns:
-            Tuple of (cluster assignments, topic keywords)
-        """
-        session_texts = [' '.join([msg['text'] for msg in session]) for session in sessions]
-        
-        vectorizer = TfidfVectorizer(
-            max_features=1000, 
-            stop_words=['russian', 'english'],
-            ngram_range=(1, 2))
-        X = vectorizer.fit_transform(session_texts)
-        
-        kmeans = KMeans(n_clusters=n_topics, random_state=42)
-        clusters = kmeans.fit_predict(X)
-        
-        topic_keywords = {}
-        for cluster_id in range(n_topics):
-            cluster_texts = [session_texts[i] for i in range(len(sessions)) 
-                            if clusters[i] == cluster_id]
-            combined_text = ' '.join(cluster_texts)
-            
-            keywords = self.kw_model.extract_keywords(
-                combined_text,
-                keyphrase_ngram_range=(1, 2),
-                stop_words=None,
-                top_n=5)
-            
-            topic_keywords[cluster_id] = [kw[0] for kw in keywords]
-        
-        return clusters, topic_keywords
-    
     def format_for_llm(self, 
                       sessions: List[List[Dict[str, Any]]], 
                       clusters: List[int],
@@ -171,20 +132,21 @@ class ChatProcessor:
         for i, session in enumerate(sessions):
             start_time = session[0]['datetime'].strftime('%H:%M')
             end_time = session[-1]['datetime'].strftime('%H:%M')
+            day_date = session[0]['datetime'].strftime('%d-%m-%Y')
             topic_id = clusters[i]
             
             session_header = (
-                f"### Сессия {i} ({start_time} - {end_time}) "
-                f"[Тема: {', '.join(topic_keywords[topic_id][:3])}]"
+                f"### Сессия {i} ({start_time} - {end_time}) {day_date} "
+                f"[Тема: {', '.join(topic_keywords[topic_id][:10])}]"
             )
             session_content = '\n'.join(
                 [f"{msg['author']}: {msg['text']}" for msg in session])
             
             llm_data.append(f"{session_header}\n{session_content}\n")
         
-        return '\n'.join(llm_data)
+        return llm_data
     
-    def process_chat_data(self) -> Dataset:
+    def process_chat_data(self, topic_analizer: TopicAnalyzer) -> Dataset:
         """Main processing pipeline."""
         try:
             # 1. Load and preprocess
@@ -194,20 +156,20 @@ class ChatProcessor:
             sessions = self.auto_segment(
                 messages,
                 time_threshold=120,  # 2 hours
-                context_window=7)
+                context_window=50)
             
             # 3. Topic analysis
-            clusters, topic_keywords = self.analyze_topics(sessions, n_topics=10)
+            clusters, topic_keywords = topic_analizer.analyze_topics(sessions, n_topics=10)
             
             # 4. Format for LLM
             llm_dataset = self.format_for_llm(sessions, clusters, topic_keywords)
             
             # 5. Save results
             with open(self.config.TEXT_DATA_FOR_LLM_SAVE_PATH, 'w', encoding='utf-8') as f:
-                f.write(llm_dataset)
-            
-            # Create and save dataset
-            dataset = Dataset.from_dict({"text": [llm_dataset]})  # Wrap in list
+                f.write('\n'.join(llm_dataset))
+
+            # Create and save dataset  
+            dataset = Dataset.from_dict({"text": llm_dataset})
             dataset.save_to_disk(self.config.DATA_SET_PATH)
             
             # Print analytics
@@ -216,6 +178,9 @@ class ChatProcessor:
             print("Discussion topics:")
             for topic_id, keywords in topic_keywords.items():
                 print(f"Topic {topic_id}: {', '.join(keywords)}")
+
+            # Print analize
+            statistic(llm_dataset)    
             
             return dataset
             
@@ -223,6 +188,6 @@ class ChatProcessor:
             print(f"Error processing chat data: {str(e)}")
             raise
 
-if __name__ == "__main__":
-    processor = ChatProcessor()
-    final_dataset = processor.process_chat_data()
+processor = ChatProcessor()
+topic_analizer = TopicAnalyzer()
+final_dataset = processor.process_chat_data(topic_analizer)

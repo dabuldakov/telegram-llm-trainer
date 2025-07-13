@@ -7,6 +7,8 @@ git clone https://github.com/dabuldakov/telegram-llm-trainer.git
 pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu126
 pip install -r requirements.txt
 pip install keybert scikit-learn pandas numpy
+pip install pymorphy2
+pip install stop-words
 
 create file .env with tokens or add secrets on platform like https://datasphere.yandex.cloud/
 
@@ -29,7 +31,7 @@ Application flow:
 
     1.1 For analyze data
 
-    !python3 prepare/analyze_texts_json.py
+    !python3 analize/analyze_texts_json.py
 
 2. Train dataset on LLM model
 
