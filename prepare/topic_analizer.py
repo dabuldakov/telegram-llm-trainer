@@ -65,75 +65,76 @@ class TopicAnalyzer:
             return None, None
 
     def analyze_topics(self, 
-                      sessions: List[List[Dict[str, Any]]],
-                      n_topics: Optional[int] = None,
-                      min_topic_size: int = 5) -> Tuple[List[int], Dict[int, List[str]]]:
+                  sessions: List[List[Dict[str, Any]]],
+                  n_topics: Optional[int] = None,
+                  min_topic_size: int = 5,
+                  batch_size: int = 500) -> Tuple[List[int], Dict[int, List[str]]]:
         """
-        Улучшенная кластеризация тем с автоматическим определением числа кластеров
-        
-        Args:
-            sessions: Список сессий с сообщениями
-            n_topics: Число тем (если None, определяется автоматически)
-            min_topic_size: Минимальный размер кластера для анализа
-            
-        Returns:
-            Tuple: (метки кластеров, ключевые слова для каждого кластера)
+        Кластеризация тем с батчевой обработкой.
         """
-        # 1. Предобработка текста с фильтрацией пустых
-        session_texts = [
-            ' '.join(msg.get('text', '') for msg in session if msg.get('text')) 
-            for session in sessions
-        ]
-        preprocessed_texts = [self.preprocess_text(text) for text in session_texts if text.strip()]
-        
-        if not preprocessed_texts:
-            self.logger.warning("Нет текстов для анализа")
-            return [], {}
+        all_clusters = []
+        all_topic_keywords = {}
+        batch_start = 0
+        cluster_offset = 0
 
-        # 2. Векторизация
-        vectorizer, X = self._vectorize_texts(preprocessed_texts)
-        if X is None:
-            return [], {}
-
-        # 3. Определение оптимального числа кластеров
-        if n_topics is None:
-            n_topics = self._find_optimal_clusters(X)
-            self.logger.info(f"Автоматически определено число тем: {n_topics}")
-
-        # 4. Кластеризация
-        try:
-            kmeans = KMeans(
-                n_clusters=min(n_topics, len(preprocessed_texts)),  # Защита от слишком большого числа кластеров
-                random_state=42,
-                n_init=10  # Явное указание числа инициализаций
-            )
-            clusters = kmeans.fit_predict(X)
-        except Exception as e:
-            self.logger.error(f"Ошибка кластеризации: {e}")
-            return [], {}
-
-        # 5. Извлечение ключевых слов с комбинированным подходом
-        topic_keywords = {}
-        for cluster_id in range(n_topics):
-            cluster_indices = [i for i, c in enumerate(clusters) if c == cluster_id]
+        while batch_start < len(sessions):
+            batch = sessions[batch_start:batch_start + batch_size]
+            session_texts = [
+                ' '.join(msg.get('text', '') for msg in session if msg.get('text')) 
+                for session in batch
+            ]
+            preprocessed_texts = [self.preprocess_text(text) for text in session_texts if text.strip()]
             
-            # Пропускаем слишком маленькие кластеры
-            if len(cluster_indices) < min_topic_size:
-                topic_keywords[cluster_id] = ["Мало данных"]
+            if not preprocessed_texts:
+                batch_start += batch_size
                 continue
 
-            cluster_texts = [preprocessed_texts[i] for i in cluster_indices]
-            combined_text = ' '.join(cluster_texts)
+            vectorizer, X = self._vectorize_texts(preprocessed_texts)
+            if X is None:
+                batch_start += batch_size
+                continue
 
-            # Комбинированный подход: KeyBERT + TF-IDF
-            keywords = self._extract_combined_keywords(
-                combined_text, 
-                vectorizer,
-                kmeans.cluster_centers_[cluster_id]
-            )
-            topic_keywords[cluster_id] = keywords
+            # Определяем число тем для батча
+            local_n_topics = n_topics
+            if local_n_topics is None:
+                local_n_topics = self._find_optimal_clusters(X)
+                self.logger.info(f"Автоматически определено число тем в батче: {local_n_topics}")
 
-        return clusters, topic_keywords
+            try:
+                kmeans = KMeans(
+                    n_clusters=min(local_n_topics, len(preprocessed_texts)),
+                    random_state=42,
+                    n_init=10
+                )
+                clusters = kmeans.fit_predict(X)
+            except Exception as e:
+                self.logger.error(f"Ошибка кластеризации: {e}")
+                batch_start += batch_size
+                continue
+
+            # Сохраняем кластеры с учетом смещения
+            all_clusters.extend([c + cluster_offset for c in clusters])
+
+            # Извлекаем ключевые слова для каждого кластера в батче
+            for cluster_id in range(local_n_topics):
+                cluster_indices = [i for i, c in enumerate(clusters) if c == cluster_id]
+                if len(cluster_indices) < min_topic_size:
+                    all_topic_keywords[cluster_id + cluster_offset] = ["Мало данных"]
+                    continue
+
+                cluster_texts = [preprocessed_texts[i] for i in cluster_indices]
+                combined_text = ' '.join(cluster_texts)
+                keywords = self._extract_combined_keywords(
+                    combined_text, 
+                    vectorizer,
+                    kmeans.cluster_centers_[cluster_id]
+                )
+                all_topic_keywords[cluster_id + cluster_offset] = keywords
+
+            cluster_offset += local_n_topics
+            batch_start += batch_size
+
+        return all_clusters, all_topic_keywords
 
     def _find_optimal_clusters(self, X, max_k: int = 10) -> int:
         """Определение оптимального числа кластеров методом локтя"""
