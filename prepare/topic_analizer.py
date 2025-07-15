@@ -51,11 +51,11 @@ class TopicAnalyzer:
 
         try:
             vectorizer = TfidfVectorizer(
-                max_features=5000,  # Увеличено для лучшего покрытия
+                max_features=1000,  # Увеличено для лучшего покрытия
                 stop_words=self.stop_words,
-                ngram_range=(1, 3),  # Расширенный диапазон n-грамм
-                min_df=3,           # Более строгий фильтр редких слов
-                max_df=0.8,         # Более мягкий фильтр частых слов
+                ngram_range=(1, 2),  # Расширенный диапазон n-грамм
+                min_df=5,           # Более строгий фильтр редких слов
+                max_df=0.5,         # Более мягкий фильтр частых слов
                 sublinear_tf=True   # Логарифмическое масштабирование TF
             )
             X = vectorizer.fit_transform(texts)
@@ -66,9 +66,9 @@ class TopicAnalyzer:
 
     def analyze_topics(self, 
                   sessions: List[List[Dict[str, Any]]],
-                  n_topics: Optional[int] = None,
-                  min_topic_size: int = 5,
-                  batch_size: int = 500) -> Tuple[List[int], Dict[int, List[str]]]:
+                  n_topics: Optional[int],
+                  min_topic_size: int,
+                  batch_size: int) -> Tuple[List[int], Dict[int, List[str]]]:
         """
         Кластеризация тем с батчевой обработкой.
         """
@@ -184,7 +184,7 @@ class TopicAnalyzer:
                     use_mmr=True,
                     diversity=0.7
                 )
-                keywords = [kw[0] for kw in keywords if kw[1] > 0.2]  # Фильтр по confidence
+                keywords = [kw[0] for kw in keywords if kw[1] > 0.4]  # Фильтр по confidence
                 if keywords:
                     return keywords[:n_keywords]
         except Exception as e:

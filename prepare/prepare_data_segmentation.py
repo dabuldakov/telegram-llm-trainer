@@ -156,10 +156,14 @@ class ChatProcessor:
             sessions = self.auto_segment(
                 messages,
                 time_threshold=120,  # 2 hours
-                context_window=50)
+                context_window=10)   # 10 messages context
             
             # 3. Topic analysis
-            clusters, topic_keywords = topic_analizer.analyze_topics(sessions, n_topics=5)
+            clusters, topic_keywords = topic_analizer.analyze_topics(
+                sessions, 
+                n_topics=5, 
+                min_topic_size=2, 
+                batch_size=50)
             
             # 4. Format for LLM
             llm_dataset = self.format_for_llm(sessions, clusters, topic_keywords)
