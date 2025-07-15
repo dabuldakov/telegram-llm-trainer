@@ -36,6 +36,7 @@ Application flow:
 2. Train dataset on LLM model
 
 !python3 -m training.train_v3_individual
+!python3 -m training.train_v4_segmentation
 
 3. Start Telegram bot
 
