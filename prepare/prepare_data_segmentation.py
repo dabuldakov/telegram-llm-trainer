@@ -155,7 +155,7 @@ class ChatProcessor:
             # 2. Segment
             sessions = self.auto_segment(
                 messages,
-                time_threshold=120,  # 2 hours
+                time_threshold=60,  # 2 hours
                 context_window=10)   # 10 messages context
             
             # 3. Topic analysis
