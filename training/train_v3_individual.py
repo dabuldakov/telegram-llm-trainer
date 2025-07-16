@@ -63,7 +63,7 @@ tokenized_dataset = dataset.map(
 def logging_length(tokenized_dataset):
     lengths = [len(x["input_ids"]) for x in tokenized_dataset]
     with open(f"{logs_dir}/tokens.log", "a", encoding="utf-8") as f:
-        f.write(f"{datetime.datetime.now().isoformat()} Средняя длина: {sum(lengths)/len(lengths)}")  
+        f.write(f"{datetime.datetime.now().isoformat()} Средняя длина: {sum(lengths)/len(lengths)}\n")  
 
 def logging_tokens(tokenized_dataset):
     sample = tokenized_dataset[0]
