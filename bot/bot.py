@@ -16,7 +16,7 @@ role_user = "user"
 logs_dir = Config.TRAINING_LOGS_PATH
 user_names_path = Config.DATA_USER_NAMES
 bot_special_name = 'ochen_hueviy_bot'
-summury_default_message = 'Ты — аналитик текста. Разбери этот диалог и выдели ключевые идеи. Расскажи что сам думаешь об этом.'
+summury_default_message = 'Ты — аналитик текста. Разбери этот диалог и выдели ключевые идеи. Кто уже обсуждал эту тему и когда. Расскажи что сам думаешь об этом. '
 imitator_name = "Assistant"
 
 # Загружаем список имён для имитации
@@ -100,7 +100,7 @@ def handle_summury(message):
     chat_id = message.chat.id
 
     discusion = history.get_formatted_history_last_day(chat_id)
-    prompt = f"{discusion}"
+    prompt = f"### Контекст: \n {discusion} \n### Задание: {summury_default_message}"
 
     # Генерируем ответ
     loggin_promt(prompt)
