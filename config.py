@@ -24,4 +24,4 @@ class Config:
     MODEL_PATH = "outputs/fine_tuned_model"
     MODEL_PATH_FINISHED_TRAIN = "outputs/fine_tuned_model"
     TRAINING_LOGS_PATH = "logs"
-    MAX_CHAT_HISTORY = 5
+    MAX_CHAT_HISTORY = 1

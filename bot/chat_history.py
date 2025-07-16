@@ -50,5 +50,5 @@ class ChatHistory:
                 if msg_dt >= one_day_ago:
                     name = msg['name']
                     content = msg['content']
-                    prompt += f"{name}: {content}\n"
+                    prompt += f"{content}\n"
         return prompt
