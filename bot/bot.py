@@ -121,7 +121,7 @@ def handle_mention(message):
 
 def handle_mention_test(message):
     chat_id = message.chat.id
-    prompt = message
+    prompt = message.text
 
     # Генерируем ответ
     loggin_promt(prompt)
