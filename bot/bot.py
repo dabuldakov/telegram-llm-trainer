@@ -121,7 +121,8 @@ def handle_mention(message):
 
 def handle_mention_test(message):
     chat_id = message.chat.id
-    prompt = message.text
+    fio = get_fio(message)
+    prompt = f"{fio}: {message.text}\nAssistant:"
 
     # Генерируем ответ
     loggin_promt(prompt)
