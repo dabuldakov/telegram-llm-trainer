@@ -83,15 +83,16 @@ def handle_message(message):
         history.add_message(chat_id, role_user, get_fio(message), u_m)
         
         # Если это reply-сообщение, то обрабатываем его отдельно
-        if handle_with_reply(message):
-            return
+        #if handle_with_reply(message):
+        #    return
 
         # Если не упомянули бота то просто слушаем
         if "@ochen_hueviy_bot" not in user_message:
             return 
        
         # Если упомянули бота, то обрабатываем ответ
-        handle_mention(message)
+        #handle_mention(message)
+        handle_mention_test(message)
         
     except Exception as e:
         bot.reply_to(message, f"Oops, error when handle message... {str(e)}")
@@ -100,7 +101,7 @@ def handle_summury(message):
     chat_id = message.chat.id
 
     discusion = history.get_formatted_history_last_day(chat_id)
-    prompt = f"### Задание: {discusion}"
+    prompt = f"### Контекст: \n {discusion} \n### Задание: {summury_default_message}"
 
     # Генерируем ответ
     loggin_promt(prompt)
@@ -117,6 +118,16 @@ def handle_mention(message):
     output = chat_model.generate(prompt)
     history.add_message(chat_id, role_assistant, imitator_name, output)
     bot.reply_to(message, f"{output} ({imitator_name})")
+
+def handle_mention_test(message):
+    chat_id = message.chat.id
+    prompt = message
+
+    # Генерируем ответ
+    loggin_promt(prompt)
+    output = chat_model.generate_summury(prompt)
+    history.add_message(chat_id, role_assistant, imitator_name, output)
+    bot.reply_to(message, output)    
 
 def handle_with_reply(message):
     chat_id = message.chat.id
