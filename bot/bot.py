@@ -122,7 +122,8 @@ def handle_mention(message):
 def handle_mention_test(message):
     chat_id = message.chat.id
     fio = get_fio(message)
-    prompt = f"{fio}: {message.text}\nAssistant:"
+    text = message.text
+    prompt = f"{fio}: {text.replace("@ochen_hueviy_bot", "")}\nAssistant:"
 
     # Генерируем ответ
     loggin_promt(prompt)
