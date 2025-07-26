@@ -44,7 +44,7 @@ class ChatModel:
         data = {k: v.to(self.model.device) for k, v in inputs.items()}
         output_ids = self.model.generate(
             **data,
-            max_new_tokens=256,
+            max_new_tokens=2048,
             do_sample=True,
             temperature=0.7,
             pad_token_id=self.tokenizer.eos_token_id,

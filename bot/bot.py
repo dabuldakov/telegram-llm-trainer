@@ -72,7 +72,6 @@ def handle_message(message):
     try:
         chat_id = message.chat.id
         user_message = message.text
-        #loggin_promt(message)
 
         # Проверка на название чата
         allowed_titles = ["Группа хуюпа", "Хуйня"]
@@ -83,16 +82,15 @@ def handle_message(message):
         history.add_message(chat_id, role_user, get_fio(message), u_m)
         
         # Если это reply-сообщение, то обрабатываем его отдельно
-        #if handle_with_reply(message):
-        #    return
+        if handle_with_reply(message):
+            return
 
         # Если не упомянули бота то просто слушаем
         if "@ochen_hueviy_bot" not in user_message:
             return 
        
         # Если упомянули бота, то обрабатываем ответ
-        #handle_mention(message)
-        handle_mention_test(message)
+        handle_mention(message)
         
     except Exception as e:
         bot.reply_to(message, f"Oops, error when handle message... {str(e)}")
