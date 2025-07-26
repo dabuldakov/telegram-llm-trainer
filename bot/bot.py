@@ -99,7 +99,7 @@ def handle_summury(message):
     chat_id = message.chat.id
 
     discusion = history.get_formatted_history_last_day(chat_id)
-    prompt = f"### Контекст:\n {discusion}\n### Задание:\n{summury_default_message}\n<|assistant|>{imitator_name}|>"
+    prompt = f"### Контекст:\n{discusion}\n### Задание:\n{summury_default_message}\n<|assistant|>{imitator_name}|>"
 
     # Генерируем ответ
     loggin_promt(prompt)
