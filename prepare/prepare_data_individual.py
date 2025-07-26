@@ -1,3 +1,4 @@
+import os
 from datasets import Dataset
 import json
 from config import Config
@@ -7,20 +8,28 @@ text_json_path = Config.CHAT_HISTORY_PREPARED_PATH
 text_data_for_llm_save_path = Config.TEXT_DATA_FOR_LLM_SAVE_PATH
 data_set_path = Config.DATA_SET_PATH
 user_names_path = Config.DATA_USER_NAMES
+user_names_filtered_path = Config.DATA_USER_NAMES_FILTERED
 
 def process_chat_data(input_file):
     with open(input_file) as f:
         chat_data = json.load(f)
 
+    # Подгатавливаем цепочки ответов на основе чата переписки где были реплаи
     json_with_context = build_context_reply_dataset(chat_data)
 
+    # Сохраняем полный список авторов с контекстом
     save_json_with_context(json_with_context)
 
-    # Форматируем тексты для подачи в ЛЛМ
-    formatted_texts = [format_example_for_llm(example) for example in json_with_context]
+    # Фильтруем по списку нужных авторов для обучения
+    json_with_context_filtered = filter_by_authors(json_with_context)
 
+    # Форматируем тексты для подачи в ЛЛМ
+    formatted_texts = [format_example_for_llm(example) for example in json_with_context_filtered]
+
+    # Сохраняем форматированный для ЛЛМ текст
     save_text_data_for_llm(formatted_texts)
 
+    # Выводим статистику
     statistic(formatted_texts)
 
     # Создаем и сохраняем датасет
@@ -114,15 +123,12 @@ def save_json_with_context(json_with_context):
     with open(text_json_path, "w", encoding="utf-8") as f:
         json.dump(json_with_context, f, ensure_ascii=False, indent=2)            
 
-def filter_by_author(input_json_path, output_json_path, author_name):
-    """
-    Фильтрует записи по имени автора и сохраняет результат в новый файл.
-    """
-    with open(input_json_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    filtered = [item for item in data if item.get("author") == author_name]
-    with open(output_json_path, "w", encoding="utf-8") as f:
-        json.dump(filtered, f, ensure_ascii=False, indent=2)
+def filter_by_authors(input_data_json):
+    if os.path.exists(user_names_filtered_path):
+        with open(user_names_filtered_path, "r", encoding="utf-8") as f:
+            user_names = [line.strip() for line in f if line.strip()]
+
+    filtered = [item for item in input_data_json if item.get("author") in user_names]
     return filtered
 
 # Пример использования

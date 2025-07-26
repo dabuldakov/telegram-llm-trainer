@@ -14,8 +14,7 @@ import wandb
 from config import Config
 
 # Конфигурация
-#model_name = "mistralai/Mixtral-8x7B-v0.1"
-model_name = "mistralai/Mistral-7B-v0.1"
+model_name = "mistralai/Mixtral-8x7B-v0.1"
 dataset_path = Config.DATA_SET_PATH
 output_dir = Config.MODEL_PATH
 logs_dir = Config.TRAINING_LOGS_PATH
@@ -89,7 +88,7 @@ model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
 # Параметры обучения
 training_args = TrainingArguments(
     output_dir=output_dir,
-    per_device_train_batch_size=4,
+    per_device_train_batch_size=1,
     gradient_accumulation_steps=8,
     learning_rate=2e-5,
     num_train_epochs=3,
@@ -101,7 +100,7 @@ training_args = TrainingArguments(
     gradient_checkpointing=True,
     remove_unused_columns=False,
     report_to="wandb",
-    max_grad_norm=0.5,
+    max_grad_norm=1,
     warmup_ratio=0.05,
     #torch_compile=True
 )

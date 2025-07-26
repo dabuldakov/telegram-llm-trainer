@@ -19,6 +19,7 @@ class Config:
     #Dataset from chat history
     DATA_SET_PATH = "data/processed_dataset"
     DATA_USER_NAMES = "data/names.txt"
+    DATA_USER_NAMES_FILTERED = "data/names_filtered.txt"
     
     # Model
     MODEL_PATH = "outputs/fine_tuned_model"
